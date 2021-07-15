@@ -1,10 +1,10 @@
-package com.score.basaball;
+package baseball.score;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BasaballApplicationTests {
+class ScoreApplicationTests {
 
 	@Test
 	void contextLoads() {

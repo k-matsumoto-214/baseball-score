@@ -1,13 +1,13 @@
-package com.score.basaball;
+package baseball.score;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class BasaballApplication {
+public class ScoreApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BasaballApplication.class, args);
+		SpringApplication.run(ScoreApplication.class, args);
 	}
 
 }
