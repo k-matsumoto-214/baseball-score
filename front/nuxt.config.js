@@ -33,9 +33,42 @@ export default {
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
+    "@nuxtjs/axios",
+    '@nuxtjs/auth',
+    '@nuxtjs/proxy'
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+  },
+
+  auth: {
+    redirect: {
+      login: '/login',   // 未ログイン時に認証ルートへアクセスした際のリダイレクトURL
+      logout: '/login',  // ログアウト時のリダイレクトURL
+      callback: false,   // Oauth認証等で必要となる コールバックルート
+      home: '/',         // ログイン後のリダイレクトURL
+    },
+    strategies: {
+      local: {
+        endpoints: {
+          login: { url: '/login', method: 'post', propertyName: 'token' },
+          user: false,
+          logout: false
+        },
+      }
+    }
+  },
+
+  axios: {
+    // axios でproxy が使えるようにする
+    proxy: true
+  },
+  proxy: {
+    '/api/': {
+      // ターゲット先のURLを指定
+      target: 'http://172.31.80.1:8081',
+      pathRewrite: {'^/api/': '/'}
+    }
   }
 }
