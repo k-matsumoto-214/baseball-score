@@ -232,7 +232,7 @@ export default {
     deletePlayer() {
       PlayerApi.deletePlayer(this.player.id)
       .then(() => {
-        this.$router.push("/player")
+        this.$router.push({ path: '/player' , query : { isDeleted: true } })
       })
       .catch((error) => {
         console.log(error)

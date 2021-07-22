@@ -122,6 +122,15 @@
       <template>
       </template>
     </v-snackbar>
+    <v-snackbar
+      v-model="isDeleted"
+      :timeout=2000
+      color="blue accent-2"
+    >
+      選手を削除しました。
+      <template>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -154,7 +163,13 @@ export default {
       dialog: false,
       inputImage: null,
       isSuccess: false,
-      successMessage: null
+      successMessage: null,
+      isDeleted: false
+    }
+  },
+  created() {
+    if (this.$route.query.isDeleted) {
+      this.isDeleted = true
     }
   },
   mounted() {
