@@ -5,15 +5,23 @@ export default {
     return axios.$get(`teams`)
   },
 
-  updateTeam(data) {
-    return axios.$post(`teams`, data)
+  updateTeam(team) {
+    return axios.$post(`teams`, {
+      name: team.name,
+      comment: team.comment,
+      image: team.image
+    })
   },
 
   deleteTeam() {
     return axios.$delete(`teams`)
   },
 
-  registerTeam(data) {
-    return axios.$post(`signup`, data)
+  registerTeam(team) {
+    return axios.$post(`/signup`, {
+      accountId: team.accountId,
+      password: team.password,
+      name: team.name
+    })
   }
 }

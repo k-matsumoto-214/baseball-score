@@ -1,123 +1,154 @@
 <template>
-  <form>
-    <v-text-field
-      v-model="name"
-      :error-messages="nameErrors"
-      :counter="10"
-      label="Name"
-      required
-      @input="$v.name.$touch()"
-      @blur="$v.name.$touch()"
-    ></v-text-field>
-    <v-text-field
-      v-model="email"
-      :error-messages="emailErrors"
-      label="E-mail"
-      required
-      @input="$v.email.$touch()"
-      @blur="$v.email.$touch()"
-    ></v-text-field>
-    <v-select
-      v-model="select"
-      :items="items"
-      :error-messages="selectErrors"
-      label="Item"
-      required
-      @change="$v.select.$touch()"
-      @blur="$v.select.$touch()"
-    ></v-select>
-    <v-checkbox
-      v-model="checkbox"
-      :error-messages="checkboxErrors"
-      label="Do you agree?"
-      required
-      @change="$v.checkbox.$touch()"
-      @blur="$v.checkbox.$touch()"
-    ></v-checkbox>
-
-    <v-btn
-      class="mr-4"
-      @click="submit"
-    >
-      submit
-    </v-btn>
-    <v-btn @click="clear">
-      clear
-    </v-btn>
-  </form>
+<div>
+  <v-card
+      class="mx-auto fill-width"
+      flat
+      max-width="640"
+  >
+    <v-card-title class="text-center pa-8">
+      <h4 class="fill-width">新規登録</h4>
+    </v-card-title>
+    <v-divider> </v-divider>
+    <div class="px-6 py-8">
+      <div style="max-width:344px" class="mx-auto">
+        <v-text-field
+          v-model="team.accountId"
+          :error-messages="accountIdErrors"
+          :counter="100"
+          outlined
+          label="アカウントID"
+          required
+          @input="$v.team.accountId.$touch()"
+          @blur="$v.team.accountId.$touch()"
+        ></v-text-field>
+        <v-text-field
+          v-model="team.password"
+          :error-messages="passwordErrors"
+          :counter="100"
+          :type="'password'"
+          outlined
+          label="パスワード"
+          required
+          @input="$v.team.password.$touch()"
+          @blur="$v.team.password.$touch()"
+        ></v-text-field>
+        <v-text-field
+          v-model="team.name"
+          :error-messages="nameErrors"
+          :counter="100"
+          outlined
+          label="チーム名"
+          required
+          @input="$v.team.name.$touch()"
+          @blur="$v.team.name.$touch()"
+        ></v-text-field>
+        <v-row justify="center">
+          <v-btn
+            class="mr-4"
+            color="primary"
+            @click="register()"
+          >
+            登録
+          </v-btn>
+          <v-btn
+            to="/login"
+            nuxt 
+            class="mr-4"
+          >
+            戻る
+          </v-btn>
+        </v-row>
+        <v-snackbar
+          v-model="isError"
+          :timeout=5000
+          color="red accent-2"
+        >
+          {{ errorMessage }}
+          <template>
+          </template>
+        </v-snackbar>
+      </div>
+    </div>
+  </v-card>
+</div>
 </template>
 
 <script>
-  import { validationMixin } from 'vuelidate'
-  import { required, maxLength, email } from 'vuelidate/lib/validators'
+import TeamApi from '@/plugins/axios/modules/team'
+import { validationMixin } from 'vuelidate'
+import { required, maxLength, minLength, alphaNum } from 'vuelidate/lib/validators'
 
-  export default {
-    mixins: [validationMixin],
-
-    validations: {
-      name: { required, maxLength: maxLength(10) },
-      email: { required, email },
-      select: { required },
-      checkbox: {
-        checked (val) {
-          return val
-        },
+export default {
+  mixins: [validationMixin],
+  validations: {
+    team: {
+      accountId: { required, minLength: minLength(8), maxLength: maxLength(100), alphaNum },
+      password: { required, minLength: minLength(8), maxLength: maxLength(100), alphaNum },
+      name: { required, maxLength: maxLength(100) }
+    }
+  },
+  data() {
+    return {
+      team: {
+        accountId: null,
+        password: null,
+        name: null
       },
+      errorMessage: null,
+      isError: false
+    }
+  },
+  computed: {
+    accountIdErrors () {
+      const errors = []
+      if (!this.$v.team.accountId.$dirty) return errors
+      !this.$v.team.accountId.required && errors.push('アカウントIDは必須です。')
+      !this.$v.team.accountId.alphaNum && errors.push('アカウントIDは半角英数です。')
+      !this.$v.team.accountId.maxLength && errors.push('アカウントIDは100文字以内です。')
+      !this.$v.team.accountId.minLength && errors.push('アカウントIDは8文字以上です。')
+      return errors
     },
-
-    data: () => ({
-      name: '',
-      email: '',
-      select: null,
-      items: [
-        'Item 1',
-        'Item 2',
-        'Item 3',
-        'Item 4',
-      ],
-      checkbox: false,
-    }),
-
-    computed: {
-      checkboxErrors () {
-        const errors = []
-        if (!this.$v.checkbox.$dirty) return errors
-        !this.$v.checkbox.checked && errors.push('You must agree to continue!')
-        return errors
-      },
-      selectErrors () {
-        const errors = []
-        if (!this.$v.select.$dirty) return errors
-        !this.$v.select.required && errors.push('Item is required')
-        return errors
-      },
-      nameErrors () {
-        const errors = []
-        if (!this.$v.name.$dirty) return errors
-        !this.$v.name.maxLength && errors.push('Name must be at most 10 characters long')
-        !this.$v.name.required && errors.push('Name is required.')
-        return errors
-      },
-      emailErrors () {
-        const errors = []
-        if (!this.$v.email.$dirty) return errors
-        !this.$v.email.email && errors.push('Must be valid e-mail')
-        !this.$v.email.required && errors.push('E-mail is required')
-        return errors
-      },
+    passwordErrors () {
+      const errors = []
+      if (!this.$v.team.password.$dirty) return errors
+      !this.$v.team.password.required && errors.push('パスワードは必須です。')
+      !this.$v.team.password.alphaNum && errors.push('パスワードは半角英数です。')
+      !this.$v.team.password.maxLength && errors.push('パスワードは100文字以内です。')
+      !this.$v.team.password.minLength && errors.push('パスワードは8文字以上です。')
+      return errors
     },
-
-    methods: {
-      submit () {
-        this.$v.$touch()
-      },
-      clear () {
-        this.$v.$reset()
-        this.name = ''
-        this.email = ''
-        this.select = null
-        this.checkbox = false
-      },
-    },
+    nameErrors () {
+      const errors = []
+      if (!this.$v.team.name.$dirty) return errors
+      !this.$v.team.name.required && errors.push('チーム名は必須です。')
+      !this.$v.team.name.maxLength && errors.push('チーム名は100文字以内です。')
+      return errors
+    }
+  },
+  methods: {
+    async register() {
+      this.isError = false
+      this.$v.$touch()
+      if (this.$v.$invalid) {
+        return
+      }
+      TeamApi.registerTeam(this.team)
+      .then((res) => {
+        this.$router.push({ path: '/login' , query : { isRegisterd: true } })
+      })
+      .catch((error) => {
+        console.log(error)
+        this.isError = true
+        if (error.status === 409) {
+          this.errorMessage = 'アカウントIDがすでに使用されています。'
+        } else {
+          this.errorMessage = '通信エラーが発生しました。'
+        }
+      })
+    }
   }
+}
 </script>
+
+<style scoped>
+</style>

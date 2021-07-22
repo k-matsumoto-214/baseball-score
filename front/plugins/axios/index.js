@@ -5,7 +5,7 @@ export default ({ store, $axios }) => {
   $axios.defaults.baseURL = '/api/'
 
   $axios.onRequest(config => {
-    config.headers.common['Authorization'] = `Bearer token`;
+    config.headers.common['Authorization'] = ``;
     config.headers.common['Accept'] = 'application/json';
   });
 

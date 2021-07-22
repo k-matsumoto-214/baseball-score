@@ -1,7 +1,6 @@
 <template>
 <div>
   <v-card
-      :tile="$vuetify.breakpoint.sm || $vuetify.breakpoint.xs"
       class="mx-auto fill-width"
       flat
       max-width="640"
@@ -12,7 +11,7 @@
     <v-divider> </v-divider>
     <div class="px-6 py-8">
       <div style="max-width:344px" class="mx-auto">
-      <v-text-field
+        <v-text-field
           v-model="accountId"
           :error-messages="accountIdErrors"
           :counter="100"
@@ -33,18 +32,40 @@
           @input="$v.password.$touch()"
           @blur="$v.password.$touch()"
         ></v-text-field>
-        <v-btn
+        <v-row justify="center">
+          <v-btn
             class="mr-4"
+            color="primary"
             @click="login()"
           >
             ログイン
           </v-btn>
-          <v-btn @click="clear()">
-            クリア
+          <v-btn
+            to="/register"
+            nuxt 
+            class="mr-4"
+          >
+            新規登録
           </v-btn>
-        <v-card-actions>
-          <v-btn color="primary" block to="/register" nuxt >新規登録</v-btn>
-        </v-card-actions>
+        </v-row>
+        <v-snackbar
+          v-model="isError"
+          :timeout=5000
+          color="red accent-2"
+        >
+          {{ errorMessage }}
+          <template>
+          </template>
+        </v-snackbar>
+        <v-snackbar
+          v-model="isRegisterd"
+          :timeout=5000
+          color="blue accent-2"
+        >
+          新規登録に成功しました。
+          <template>
+          </template>
+        </v-snackbar>
       </div>
     </div>
   </v-card>
@@ -57,20 +78,22 @@ import { required, maxLength, minLength, alphaNum } from 'vuelidate/lib/validato
 
 export default {
   mixins: [validationMixin],
-
   validations: {
     accountId: { required, minLength: minLength(8), maxLength: maxLength(100), alphaNum },
     password: { required, minLength: minLength(8), maxLength: maxLength(100), alphaNum }
   },
-  middleware({ store, redirect }) {
-    if(store.$auth.loggedIn) {
-      redirect('/');
+  created() {
+    if (this.$route.query.isRegisterd) {
+      this.isRegisterd = true
     }
   },
   data() {
     return {
       accountId: 'testtest',
-      password: 'password'
+      password: 'password',
+      errorMessage: null,
+      isError: false,
+      isRegisterd: false
     }
   },
   computed: {
@@ -95,6 +118,7 @@ export default {
   },
   methods: {
     async login() {
+      this.isError = false
       this.$v.$touch()
       if (this.$v.$invalid) {
         return
@@ -109,6 +133,12 @@ export default {
         console.log(response)
       } catch(error) {
         console.log(error)
+        this.isError = true
+        if (error.status === 403) {
+          this.errorMessage = 'IDとパスワードの組み合わせが違います。'
+        } else {
+          this.errorMessage = '通信エラーが発生しました。'
+        }
       }
     },
     clear () {

@@ -6,7 +6,14 @@ export default {
   },
 
   updatePlayer(data) {
-    return axios.$post(`players/${data.id}`, data)
+    return axios.$post(`players/${data.id}`, {
+      name: player.name,
+      number: player.number,
+      birthday: player.birthday,
+      position: player.position,
+      image: player.image,
+      comment: player.comment
+    })
   },
 
   deletePlayer(id) {
@@ -18,6 +25,13 @@ export default {
   },
 
   registerPlayer(data) {
-    return axios.$post(`players`, data)
+    return axios.$post(`players`, {
+      name: player.name,
+      number: player.number,
+      birthday: player.birthday,
+      position: player.position,
+      image: player.image,
+      comment: player.comment
+    })
   }
 }
