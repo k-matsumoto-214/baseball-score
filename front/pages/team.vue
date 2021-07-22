@@ -11,7 +11,6 @@
       <div v-if="!isEdit">
         <v-img
           :src="team.image !== null ? team.image : 'noimage.jpg'"
-          height="250px"
         ></v-img>
         <v-card-title>
           {{ team.name}}
@@ -54,7 +53,7 @@
     <v-row justify="center">
       <v-btn
         v-if="!isEdit"
-        class="mr-4 mt-4 mb-2"
+        class="mt-4 mb-2"
         color="primary"
         @click="isEdit = true"
       >
@@ -69,7 +68,7 @@
           更新
         </v-btn>
         <v-btn
-          class="mr-4 mt-4 mb-2"
+          class="mt-4 mb-2"
           @click="cancel()"
         >
           戻る

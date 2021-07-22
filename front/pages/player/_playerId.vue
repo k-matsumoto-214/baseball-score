@@ -8,47 +8,24 @@
       <v-card-text>
         Player
       </v-card-text>
-      <v-list three-line>
-        <template v-for="(player, idx) in players">
-          <v-list-item
-            :key="player.id"
-            :to="`/player/${player.id}`"
-          >
-            <v-list-item-avatar>
-              <v-img :src="player.image !== null ? player.image : 'noimage.jpg'"></v-img>
-            </v-list-item-avatar>
-            <v-list-item-content>
-              <v-list-item-title>{{ player.name }}</v-list-item-title>
-              <v-list-item-subtitle>{{ player.position }}</v-list-item-subtitle>
-            </v-list-item-content>
-            <p class="text-subtitle-1">{{ player.number }}</p>
-          </v-list-item>
-          <v-divider
-            v-if="idx !== (players.length - 1)"
-            :key="`second-${idx}`"
-          >
-          </v-divider>
-        </template>
-      </v-list>
-    </v-card>
-    <v-dialog
-      v-model="dialog"
-      max-width="640"
-    >
-      <template v-slot:activator="{ on, attrs }">
-        <v-row justify="center">
-          <v-btn
-            color="primary"
-            dark
-            v-bind="attrs"
-            v-on="on"
-            class="mt-4 mb-2"
-          >
-            追加
-          </v-btn>
-        </v-row>
-      </template>
-      <v-card class="px-6 py-8">
+      <div v-if="!isEdit">
+        <v-img
+          :src="player.image !== null ? player.image : '../noimage.jpg'"
+        ></v-img>
+        <v-card-title>
+          {{ player.name}}
+        </v-card-title>
+        <v-card-subtitle>
+          ポジション:　{{ player.position}}
+        </v-card-subtitle>
+        <v-card-subtitle>
+          背番号:　{{ player.number}}
+        </v-card-subtitle>
+        <v-card-subtitle>
+          コメント:　{{ player.comment}}
+        </v-card-subtitle>
+      </div>
+      <div v-else>
         <v-img v-if="player.image" :src="player.image"></v-img>
         <v-file-input
           label="クリックして画像を変更"
@@ -96,26 +73,61 @@
           @input="$v.player.comment.$touch()"
           @blur="$v.player.comment.$touch()"
         ></v-text-field>
-        <v-row justify="center">
-          <v-btn
-            class="mr-4 mt-4 mb-2"
-            color="primary"
-            @click="save()"
+      </div>
+      <v-row v-if="!isEdit" justify="center">
+        <v-btn
+          class="mr-4 mt-4 mb-2"
+          color="primary"
+          @click="isEdit = true"
+        >
+          編集
+        </v-btn>
+        <v-btn
+          class="mt-4 mb-2"
+          @click="$router.push('/player')"
+        >
+          一覧へ
+        </v-btn>
+      </v-row>
+      <v-row v-else justify="center">
+        <v-btn
+          class="mr-4 mt-4 mb-2"
+          color="primary"
+          @click="save()"
+        >
+          更新
+        </v-btn>
+        <v-btn
+          class="mt-4 mb-2"
+          @click="cancel()"
+        >
+          戻る
+        </v-btn>
+      </v-row>
+      <v-dialog v-if="isEdit" v-model="isOpenDeleteModal" max-width="640">
+        <template v-slot:activator="{ on, attrs }">
+          <p 
+            class="text-caption text-right"
+            style="margin-top: -30px; color: #F06292;"
+            @click="isOpenDeleteModal = true"
+            v-bind="attrs"
+            v-on="on"
           >
-            追加
-          </v-btn>
-          <v-btn
-            class="mt-4 mb-2"
-            @click="cancel()"
-          >
-            戻る
-          </v-btn>
-        </v-row>
-      </v-card>
-    </v-dialog>
+            削除
+          </p>
+        </template>
+        <v-card class="px-6 py-8">
+          <v-card-text>「{{ player.name }}」を削除します。一度削除した選手は復元できません。<br>本当に削除しますか？</v-card-text>
+          <v-row justify="center">
+            <v-btn color="pink accent-1" @click="deletePlayer()" class="mr-4 mt-4">削除</v-btn>
+            <v-btn @click="isOpenDeleteModal = false" class="mt-4">戻る</v-btn>
+          </v-row>
+        </v-card>
+      </v-dialog>
+    </v-card>
     <v-snackbar
       v-model="isSuccess"
-      :timeout=2000
+      :timeout=1000
       color="blue accent-2"
     >
       {{ successMessage }}
@@ -144,21 +156,23 @@ export default {
   data() {
     return {
       player: {
+        id: null,
         name: null,
         number: null,
         position: null,
         image: null,
         comment: null
       },
-      players: [],
-      dialog: false,
+      isEdit: false,
       inputImage: null,
       isSuccess: false,
-      successMessage: null
+      successMessage: null,
+      isOpenDeleteModal: false
     }
   },
   mounted() {
-    this.fetchPlayers()
+    this.player.id = Number(this.$route.params.playerId)
+    this.fetchPlayer()
   },
   computed: {
     nameErrors () {
@@ -193,24 +207,32 @@ export default {
       if (this.$v.$invalid) {
         return
       }
-      console.log(this.player)
-      PlayerApi.registerPlayer(this.player)
+      PlayerApi.updatePlayer(this.player)
       .then(() => {
-        this.fetchPlayers()
-        this.dialog = false
-        this.player = {}
+        this.fetchPlayer()
+        this.isEdit = false
         this.isSuccess = true
-        this.successMessage = '選手を追加しました。'
+        this.successMessage = '選手情報を更新しました。'
       })
       .catch((error) => console.log(error))
     },
     cancel() {
-      this.dialog = false
+      this.fetchPlayer()
+      this.isEdit = false
     },
-    fetchPlayers() {
-      PlayerApi.getPlayers()
+    fetchPlayer() {
+      PlayerApi.getPlayer(this.player.id)
       .then((res) => {
-        this.players = res
+        this.player = res
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    },
+    deletePlayer() {
+      PlayerApi.deletePlayer(this.player.id)
+      .then(() => {
+        this.$router.push("/player")
       })
       .catch((error) => {
         console.log(error)
