@@ -13,15 +13,19 @@ export default {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+    ],
+    script: [
     ]
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
+    
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
+    '@/plugins/axios/index'
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
@@ -34,8 +38,9 @@ export default {
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     "@nuxtjs/axios",
-    '@nuxtjs/auth',
-    '@nuxtjs/proxy'
+    "@nuxtjs/auth",
+    "@nuxtjs/proxy",
+    "@nuxtjs/vuetify"
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
@@ -64,10 +69,11 @@ export default {
     // axios でproxy が使えるようにする
     proxy: true
   },
+
   proxy: {
     '/api/': {
       // ターゲット先のURLを指定
-      target: 'http://172.31.80.1:8081',
+      target: 'http://172.18.208.1:8081',
       pathRewrite: {'^/api/': '/'}
     }
   }
