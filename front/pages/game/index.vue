@@ -1,20 +1,18 @@
 <template>
   <v-container>
-    <v-card
-      class="mx-auto fill-width pt-10"
-      flat
-      max-width="640"
-    >
+      <v-card-text>
+        選手一覧
+      </v-card-text>
+      <v-divider></v-divider>
       <v-card-actions>
-        <v-btn color="primary" block @click="$router.push('/team')">Team</v-btn>
+        <v-btn color="primary" block @click="token()">ボタン</v-btn>
       </v-card-actions>
       <v-card-actions>
-        <v-btn color="primary" block @click="$router.push('/player')">Player</v-btn>
+        <v-btn color="primary" block @click="getPlayers()">選手リスト取得</v-btn>
       </v-card-actions>
       <v-card-actions>
-        <v-btn color="primary" block @click="$router.push('/game')">Game</v-btn>
+        <v-btn color="primary" block @click="getPlayer(2)">選手ID2取得</v-btn>
       </v-card-actions>
-    </v-card>
   </v-container>
 </template>
 
