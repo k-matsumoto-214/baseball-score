@@ -1,56 +1,48 @@
 <template>
-  <v-app-bar
-    color="blue-grey lighten-4"
-    elevate-on-scroll
-    dense
-    class="mx-auto fill-width"
-    max-width="640"
-    fixed
-    app
-  >
-    <v-menu>
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn
-          icon
-          v-bind="attrs"
-          v-on="on"
+  <div>
+    <v-app-bar
+      color="blue-grey lighten-4"
+      elevate-on-scroll
+      dense
+      class="mx-auto fill-width"
+      max-width="640"
+      fixed
+    >
+      <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-toolbar-title>{{ team.name }}</v-toolbar-title>
+    </v-app-bar>
+    <v-navigation-drawer
+      v-model="drawer"
+      fixed
+      temporary
+    >
+      <v-list
+        nav
+        dense
+      >
+        <v-list-item-group
+          v-model="group"
+          active-class="blue--text text--accent-2"
         >
-          <v-app-bar-nav-icon></v-app-bar-nav-icon>
-        </v-btn>
-      </template>
-
-      <v-list>
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-        >
-          <v-list-item-title>
-            <p @click="$router.push(item.path)">{{ item.name }}</p>
-          </v-list-item-title>
-        </v-list-item>
+          <v-list>
+            <v-list-item
+              v-for="(item, i) in items"
+              :key="i"
+            >
+              <v-list-item-title @click="$router.push(item.path)">
+                {{ item.name }}
+              </v-list-item-title>
+            </v-list-item>
+            <v-list-item>
+              <v-list-item-title @click="logout">
+                Logout
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-list-item-group>
       </v-list>
-    </v-menu>
-    <v-toolbar-title>{{ team.name }}</v-toolbar-title>
-    <v-spacer></v-spacer>
-    <v-menu>
-      <template v-slot:activator="{ on, attrs }">
-        <v-btn
-          icon
-          v-bind="attrs"
-          v-on="on"
-        >
-          <v-icon>mdi-dots-vertical</v-icon>
-        </v-btn>
-      </template>
-      <v-list>
-        <v-list-item>
-          <v-list-item-title>
-            <p @click="logout()">ログアウト</p>
-          </v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
-  </v-app-bar>
+    </v-navigation-drawer>
+  </div>
 </template>
 
 <script>
@@ -80,8 +72,15 @@ export default {
           name: 'Game',
           path: '/game'
         }
-      ]
+      ],
+      drawer: false,
+      group: null
     }
+  },
+  watch: {
+    group () {
+      this.drawer = false
+    },
   },
   mounted() {
     TeamApi.getTeam()

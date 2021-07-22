@@ -10,8 +10,8 @@
       </v-card-text>
       <div v-if="!isEdit">
         <v-img
-          :src="team.image"
-          height="200px"
+          :src="team.image !== null ? team.image : 'noimage.jpg'"
+          height="250px"
         ></v-img>
         <v-card-title>
           {{ team.name}}
@@ -78,7 +78,7 @@
     </v-row>
     <v-snackbar
       v-model="isSuccess"
-      :timeout=5000
+      :timeout=2000
       color="blue accent-2"
     >
       {{ successMessage }}
