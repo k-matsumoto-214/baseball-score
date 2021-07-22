@@ -24,7 +24,7 @@
           </v-list-item>
           <v-divider
             v-if="idx !== (players.length - 1)"
-            :key="idx"
+            :key="`second-${idx}`"
           >
           </v-divider>
         </template>
