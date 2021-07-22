@@ -119,7 +119,7 @@
         <v-card class="px-6 py-8">
           <v-card-text>「{{ player.name }}」を削除します。一度削除した選手は復元できません。<br>本当に削除しますか？</v-card-text>
           <v-row justify="center">
-            <v-btn color="pink accent-1" @click="deletePlayer()" class="mr-4 mt-4">削除</v-btn>
+            <v-btn color="pink lighten-2" @click="deletePlayer()" class="mr-4 mt-4 white--text">削除</v-btn>
             <v-btn @click="isOpenDeleteModal = false" class="mt-4">戻る</v-btn>
           </v-row>
         </v-card>
