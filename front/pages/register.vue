@@ -44,7 +44,7 @@
         ></v-text-field>
         <v-row justify="center">
           <v-btn
-            class="mr-4"
+            class="mr-4 mt-4"
             color="primary"
             @click="register()"
           >
@@ -53,7 +53,7 @@
           <v-btn
             to="/login"
             nuxt 
-            class="mr-4"
+            class="mt-4"
           >
             戻る
           </v-btn>

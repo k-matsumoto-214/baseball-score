@@ -5,8 +5,8 @@ export default {
     return axios.$get(`players/${id}`)
   },
 
-  updatePlayer(data) {
-    return axios.$post(`players/${data.id}`, {
+  updatePlayer(player) {
+    return axios.$post(`players/${player.id}`, {
       name: player.name,
       number: player.number,
       birthday: player.birthday,
@@ -24,7 +24,7 @@ export default {
     return axios.$get(`players`)
   },
 
-  registerPlayer(data) {
+  registerPlayer(player) {
     return axios.$post(`players`, {
       name: player.name,
       number: player.number,
