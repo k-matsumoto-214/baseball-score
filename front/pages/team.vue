@@ -114,7 +114,7 @@ export default {
       successMessage: null
     }
   },
-  mounted() {
+  created() {
     this.fetchTeam()
   },
   computed: {

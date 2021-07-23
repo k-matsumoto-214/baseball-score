@@ -21,15 +21,15 @@
             </v-list-item-content>
             <div class="ml-6 d-flex">
               <p
-                v-if="game.result !== null"
-                class="text-h6 text-center"
+                v-if="game.resultFlg"
+                class="text-h6 text-right mr-3"
                 style="width: 5rem;"
               >
                 {{ game.topScore }} - {{ game.bottomScore }}
               </p>
               <p
-                v-if="game.result !== null"
-                class="text-h6 text-left"
+                v-if="game.resultFlg"
+                class="text-h6 text-right"
                 :style="styleResult(game.result)"
                 style="width: 3rem; font-weight: normal;"
               >
@@ -46,7 +46,7 @@
       </v-list>
     </v-card>
     <v-dialog
-      v-model="dialog"
+      v-model="isOpenAddModal"
       max-width="640"
     >
       <template v-slot:activator="{ on, attrs }">
@@ -65,7 +65,7 @@
       <v-card class="px-6 py-8">
         <v-text-field
           v-model="game.opponentTeam"
-          :error-messages="nameErrors"
+          :error-messages="opponentTeamErrors"
           :counter="100"
           outlined
           label="対戦相手"
@@ -73,35 +73,62 @@
           @input="$v.game.opponentTeam.$touch()"
           @blur="$v.game.opponentTeam.$touch()"
         ></v-text-field>
-        <v-text-field
-          v-model="player.position"
-          :error-messages="positionErrors"
-          :counter="100"
-          outlined
-          label="ポジション"
-          required
-          @input="$v.player.position.$touch()"
-          @blur="$v.player.position.$touch()"
-        ></v-text-field>
-        <v-text-field
-          v-model="player.number"
-          :error-messages="numberErrors"
-          outlined
-          label="背番号"
-          required
-          @input="$v.player.number.$touch()"
-          @blur="$v.player.number.$touch()"
-        ></v-text-field>
-        <v-text-field
-          v-model="player.comment"
-          :error-messages="commentErrors"
-          :counter="200"
-          outlined
-          label="コメント"
-          required
-          @input="$v.player.comment.$touch()"
-          @blur="$v.player.comment.$touch()"
-        ></v-text-field>
+        <v-dialog
+          ref="dialog"
+          v-model="isOpenDateModal"
+          :return-value.sync="game.date"
+          persistent
+          width="290px"
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-text-field
+              v-model="game.date"
+              label="日付を選択"
+              prepend-icon="mdi-calendar"
+              readonly
+              v-bind="attrs"
+              v-on="on"
+              :error-messages="dateErrors"
+              @input="$v.game.date.$touch()"
+              @blur="$v.game.date.$touch()"
+            ></v-text-field>
+          </template>
+          <v-date-picker
+            v-model="game.date"
+            scrollable
+            locale="jp-ja"
+            :day-format="date => new Date(date).getDate()"
+          >
+            <v-spacer></v-spacer>
+            <v-btn
+              text
+              color="primary"
+              @click="isOpenDateModal = false"
+            >
+              戻る
+            </v-btn>
+            <v-btn
+              text
+              color="primary"
+              @click="$refs.dialog.save(game.date)"
+            >
+              決定
+            </v-btn>
+          </v-date-picker>
+        </v-dialog>
+        <v-radio-group
+          v-model="game.topFlg"
+          row
+        >
+          <v-radio
+            label='先攻'
+            value='true'
+          ></v-radio>
+          <v-radio
+            label='後攻'
+            value='false'
+          ></v-radio>
+        </v-radio-group>
         <v-row justify="center">
           <v-btn
             class="mr-4 mt-4 mb-2"
@@ -119,12 +146,21 @@
         </v-row>
       </v-card>
     </v-dialog>
+    <v-snackbar
+      v-model="isDeleted"
+      :timeout=2000
+      color="blue accent-2"
+    >
+      試合を削除しました。
+      <template>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
 <script>
 import { validationMixin } from 'vuelidate'
-import { required, maxLength, numeric } from 'vuelidate/lib/validators'
+import { required, maxLength } from 'vuelidate/lib/validators'
 import GameApi from '@/plugins/axios/modules/game'
 
 export default {
@@ -148,16 +184,34 @@ export default {
         date: null,
         field: null,
         winFlg: null,
-        topFlg: null
-      }
+        topFlg: 'true',
+        resultFlg: false,
+        lineupingFLg: false
+      },
+      isOpenAddModal: false,
+      isOpenDateModal: false,
+      isDeleted: false
+    }
+  },
+  computed: {
+    opponentTeamErrors () {
+      const errors = []
+      if (!this.$v.game.opponentTeam.$dirty) return errors
+      !this.$v.game.opponentTeam.required && errors.push('対戦相手は必須です。')
+      !this.$v.game.opponentTeam.maxLength && errors.push('対戦相手は100文字以内です。')
+      return errors
+    },
+    dateErrors () {
+      const errors = []
+      if (!this.$v.game.date.$dirty) return errors
+      !this.$v.game.date.required && errors.push('日付は必須です。')
+      return errors
     }
   },
   created() {
     if (this.$route.query.isDeleted) {
       this.isDeleted = true
     }
-  },
-  mounted() {
     this.fetchGames()
   },
   methods: {
@@ -187,6 +241,22 @@ export default {
       } else {
         return 'color: #C0CA33'
       }
+    },
+    save() {
+      this.$v.$touch()
+      if (this.$v.$invalid) {
+        return
+      }
+      GameApi.registerGame(this.game)
+      .then((res) => {
+        this.$router.push(`/game/${res.id}`)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    },
+    cancel() {
+      this.isOpenAddModal = false
     }
   },
 }

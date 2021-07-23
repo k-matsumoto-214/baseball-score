@@ -171,8 +171,6 @@ export default {
     if (this.$route.query.isDeleted) {
       this.isDeleted = true
     }
-  },
-  mounted() {
     this.fetchPlayers()
   },
   computed: {
@@ -208,7 +206,6 @@ export default {
       if (this.$v.$invalid) {
         return
       }
-      console.log(this.player)
       PlayerApi.registerPlayer(this.player)
       .then(() => {
         this.fetchPlayers()

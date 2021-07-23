@@ -13,16 +13,12 @@
           :src="player.image !== null ? player.image : '../noimage.jpg'"
         ></v-img>
         <v-card-title>
-          {{ player.name}}
+          {{ player.name }}
         </v-card-title>
         <v-card-subtitle>
-          ポジション:　{{ player.position}}
-        </v-card-subtitle>
-        <v-card-subtitle>
-          背番号:　{{ player.number}}
-        </v-card-subtitle>
-        <v-card-subtitle>
-          コメント:　{{ player.comment}}
+          ポジション:　{{ player.position }} <br>
+          背番号:　{{ player.number }} <br>
+          コメント:　{{ player.comment }}
         </v-card-subtitle>
       </div>
       <div v-else>
@@ -170,7 +166,7 @@ export default {
       isOpenDeleteModal: false
     }
   },
-  mounted() {
+  created() {
     this.player.id = Number(this.$route.params.playerId)
     this.fetchPlayer()
   },
