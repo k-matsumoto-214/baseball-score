@@ -15,6 +15,7 @@
     "@nuxtjs/vuetify": "^1.12.1",
     "core-js": "^3.15.1",
     "nuxt": "^2.15.7",
+    "vuedraggable": "^2.24.3",
     "vuelidate": "^0.7.6"
   },
   "devDependencies": {},
