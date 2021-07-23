@@ -24,7 +24,7 @@ export default {
       result: game.result,
       topFlg: game.topFlg,
       resultFlg: game.resultFlg,
-      lineupEditingFlg: game.lineupEditingFlg
+      lineupingStatus: game.lineupingStatus
     })
   },
 

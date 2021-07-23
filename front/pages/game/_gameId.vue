@@ -15,7 +15,7 @@
         日付:　{{ game.date }} <br>
         場所:　{{ game.field }}
       </v-card-subtitle>
-      <div v-if="game.lineupingFlg">
+      <div v-if="game.lineupingStatus === 0">
         <v-card-text>
           <p>スタメンを登録してください</p>
         </v-card-text>
@@ -71,7 +71,7 @@ export default {
         winFlg: null,
         topFlg: null,
         resultFlg: false,
-        lineupingFlg: false
+        lineupingStatus: null
       },
       numbers:[ 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
       players: [],
