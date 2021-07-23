@@ -38,7 +38,7 @@
             <v-col cols="10">
               <draggable v-model="orders" draggable=".drag" group="order" style="padding:5px">
                 <div v-for="(order, idx) in orders" :key="idx" class="drag">{{ order.name }}</div>
-                <span v-if="orders.length === 0">ここにドラッグ</span>
+                <span>ここにドラッグ</span>
               </draggable>
             </v-col>
           </v-row>
