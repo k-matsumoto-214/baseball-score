@@ -11,6 +11,8 @@ export default {
       date: game.date,
       field: game.field,
       topFlg: game.topFlg,
+      topLineup: game.topLineup,
+      bottomLineup: game.bottomLineup
     })
   },
 
@@ -24,7 +26,9 @@ export default {
       result: game.result,
       topFlg: game.topFlg,
       resultFlg: game.resultFlg,
-      lineupingStatus: game.lineupingStatus
+      lineupingStatus: game.lineupingStatus,
+      topLineup: game.topLineup,
+      bottomLineup: game.bottomLineup
     })
   },
 

@@ -186,8 +186,84 @@ export default {
         winFlg: null,
         topFlg: 'true',
         resultFlg: false,
-        lineupingFLg: false
+        lineupingFLg: false,
+        topLineup: [],
+        bottomLineup: []
       },
+      defaultLineup: [
+        { 'orderNumber': 1,
+          'orderDetails': [
+            {
+            'fieldNumber': 1,
+            'playerId': 1000
+            }
+          ]
+        },
+        { 'orderNumber': 2,
+          'orderDetails': [
+            {
+            'fieldNumber': 2,
+            'playerId': 1001
+            }
+          ]
+        },
+        { 'orderNumber': 3,
+          'orderDetails': [
+            {
+            'fieldNumber': 3,
+            'playerId': 1002
+            }
+          ]
+        },
+        { 'orderNumber': 4,
+          'orderDetails': [
+            {
+            'fieldNumber': 4,
+            'playerId': 1003
+            }
+          ]
+        },
+        { 'orderNumber': 5,
+          'orderDetails': [
+            {
+            'fieldNumber': 5,
+            'playerId': 1004
+            }
+          ]
+        },
+        { 'orderNumber': 6,
+          'orderDetails': [
+            {
+            'fieldNumber': 6,
+            'playerId': 1005
+            }
+          ]
+        },
+        { 'orderNumber': 7,
+          'orderDetails': [
+            {
+            'fieldNumber': 7,
+            'playerId': 1006
+            }
+          ]
+        },
+        { 'orderNumber': 8,
+          'orderDetails': [
+            {
+            'fieldNumber': 8,
+            'playerId': 1007
+            }
+          ]
+        },
+        { 'orderNumber': 9,
+          'orderDetails': [
+            {
+            'fieldNumber': 9,
+            'playerId': 1008
+            }
+          ]
+        }
+      ],
       isOpenAddModal: false,
       isOpenDateModal: false,
       isDeleted: false
@@ -247,6 +323,12 @@ export default {
       if (this.$v.$invalid) {
         return
       }
+      if(this.game.topFlg='true') {
+        this.game.bottomLineup = this.defaultLineup
+      } else {
+        this.game.topLineup = this.defaultLineup
+      }
+      console.log(this.game)
       GameApi.registerGame(this.game)
       .then((res) => {
         this.$router.push(`/game/${res.id}`)
