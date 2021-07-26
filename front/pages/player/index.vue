@@ -15,7 +15,7 @@
             :to="`/player/${player.id}`"
           >
             <v-list-item-avatar>
-              <v-img :src="player.image !== null ? player.image : 'noimage.jpg'"></v-img>
+              <v-img :src="player.image ? player.image : 'noimage.jpg'"></v-img>
             </v-list-item-avatar>
             <v-list-item-content>
               <v-list-item-title>{{ player.name }}</v-list-item-title>
@@ -122,6 +122,15 @@
       <template>
       </template>
     </v-snackbar>
+    <v-snackbar
+      v-model="isDeleted"
+      :timeout=2000
+      color="blue accent-2"
+    >
+      選手を削除しました。
+      <template>
+      </template>
+    </v-snackbar>
   </v-container>
 </template>
 
@@ -154,10 +163,14 @@ export default {
       dialog: false,
       inputImage: null,
       isSuccess: false,
-      successMessage: null
+      successMessage: null,
+      isDeleted: false
     }
   },
-  mounted() {
+  created() {
+    if (this.$route.query.isDeleted) {
+      this.isDeleted = true
+    }
     this.fetchPlayers()
   },
   computed: {
@@ -193,7 +206,6 @@ export default {
       if (this.$v.$invalid) {
         return
       }
-      console.log(this.player)
       PlayerApi.registerPlayer(this.player)
       .then(() => {
         this.fetchPlayers()

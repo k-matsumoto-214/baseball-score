@@ -13,16 +13,12 @@
           :src="player.image !== null ? player.image : '../noimage.jpg'"
         ></v-img>
         <v-card-title>
-          {{ player.name}}
+          {{ player.name }}
         </v-card-title>
         <v-card-subtitle>
-          ポジション:　{{ player.position}}
-        </v-card-subtitle>
-        <v-card-subtitle>
-          背番号:　{{ player.number}}
-        </v-card-subtitle>
-        <v-card-subtitle>
-          コメント:　{{ player.comment}}
+          ポジション:　{{ player.position }} <br>
+          背番号:　{{ player.number }} <br>
+          コメント:　{{ player.comment }}
         </v-card-subtitle>
       </div>
       <div v-else>
@@ -119,7 +115,7 @@
         <v-card class="px-6 py-8">
           <v-card-text>「{{ player.name }}」を削除します。一度削除した選手は復元できません。<br>本当に削除しますか？</v-card-text>
           <v-row justify="center">
-            <v-btn color="pink accent-1" @click="deletePlayer()" class="mr-4 mt-4">削除</v-btn>
+            <v-btn color="pink lighten-2" @click="deletePlayer()" class="mr-4 mt-4 white--text">削除</v-btn>
             <v-btn @click="isOpenDeleteModal = false" class="mt-4">戻る</v-btn>
           </v-row>
         </v-card>
@@ -170,7 +166,7 @@ export default {
       isOpenDeleteModal: false
     }
   },
-  mounted() {
+  created() {
     this.player.id = Number(this.$route.params.playerId)
     this.fetchPlayer()
   },
@@ -232,7 +228,7 @@ export default {
     deletePlayer() {
       PlayerApi.deletePlayer(this.player.id)
       .then(() => {
-        this.$router.push("/player")
+        this.$router.push({ path: '/player' , query : { isDeleted: true } })
       })
       .catch((error) => {
         console.log(error)
