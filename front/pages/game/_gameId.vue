@@ -15,59 +15,153 @@
         日付:　{{ game.date }} <br>
         場所:　{{ game.field }}
       </v-card-subtitle>
-      <div v-if="game.lineupingStatus === 0">
-        <v-card-text>
-          <p class="text-subtitle-1">スタメンを登録してください</p>
-        </v-card-text>
-        <v-row justify="center">
-          <v-col cols="5">
-            <p>選手一覧</p>
-            <draggable v-model="players" group="starters" :animation="300" :delay="50"
-              style="padding:5px 0; height: 550px; overflow-y: scroll;"
+      <div v-if="!game.resultFlg">
+        <div v-if="game.lineupingStatus === 0">
+          <v-card-text>
+            <p class="text-subtitle-1">スタメンを登録してください</p>
+          </v-card-text>
+          <v-row justify="center">
+            <v-col cols="5">
+              <p>選手一覧</p>
+              <draggable v-model="players" group="starters" :animation="300" :delay="50"
+                style="padding:5px 0; height: 550px; overflow-y: scroll;"
+              >
+                <lineup-list
+                  v-for="player in players"
+                  :key="player.id"
+                  :player="player"
+                />
+              </draggable>
+            </v-col>
+            <v-col cols="7">         
+              <p>スタメン</p>
+              <v-row justify="center">
+                <v-col cols="9">
+                  <draggable v-model="starters" group="starters" :animation="300" :delay="50" style="padding:5px 0">
+                    <lineup-list
+                      v-for="(starter,idx) in starters"
+                      :key="starter.id"
+                      :player="starter"
+                      :number="idx + 1"
+                    />
+                    <p v-if="starters.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                  </draggable>
+                </v-col>
+                <v-col cols="3">
+                  <draggable v-model="fields" :animation="300" :delay="50" style="padding:5px 0">
+                    <field-list
+                      v-for="(field,idx) in fields"
+                      :key="idx"
+                      :fieldNumber="field"
+                    />
+                  </draggable>
+                </v-col>
+              </v-row>
+            </v-col>
+          </v-row>
+          <p class="text-center" style="color: #FF4081">{{ errorMessage }}</p>
+          <v-row justify="center">
+            <v-btn
+              class="mr-4 mt-4 mb-2"
+              color="primary"
+              @click="saveStarters()"
             >
-              <lineup-list
-                v-for="player in players"
-                :key="player.id"
-                :player="player"
-              />
-            </draggable>
-          </v-col>
-          <v-col cols="7">         
-            <p>スタメン</p>
-            <v-row justify="center">
-              <v-col cols="9">
-                <draggable v-model="starters" group="starters" :animation="300" :delay="50" style="padding:5px 0">
-                  <lineup-list
-                    v-for="(starter,idx) in starters"
-                    :key="starter.id"
-                    :player="starter"
-                    :number="idx + 1"
-                  />
-                  <p v-if="starters.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                </draggable>
-              </v-col>
-              <v-col cols="3">
-                <draggable v-model="fields" :animation="300" :delay="50" style="padding:5px 0">
-                  <field-list
-                    v-for="(field,idx) in fields"
-                    :key="idx"
-                    :fieldNumber="field"
-                  />
-                </draggable>
-              </v-col>
-            </v-row>
-          </v-col>
-        </v-row>
-        <p class="text-center" style="color: #FF4081">{{ errorMessage }}</p>
-        <v-row justify="center">
-          <v-btn
-            class="mr-4 mt-4 mb-2"
-            color="primary"
-            @click="saveStarters()"
-          >
-            確定
-          </v-btn>
-        </v-row>
+              確定
+            </v-btn>
+          </v-row>
+        </div>
+        <div v-else-if="game.lineupingStatus === 2">
+          <v-row>
+            <v-col cols="2" style="padding: 0px;">
+              <v-simple-table class="grey lighten-3">
+                <template v-slot:default>
+                  <thead>
+                    <tr>
+                      <th class="text-left">
+                        Team
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {{ game.topFlg ? team.name : game.opponentTeam }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>{{ !game.topFlg ? team.name : game.opponentTeam }}</td>
+                    </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
+            </v-col>
+            <v-col cols="9" style="padding: 0 1px;">
+              <v-simple-table class="grey lighten-3">
+                <template v-slot:default>
+                  <thead>
+                    <tr class="text-center">
+                      <th class="inningHeader  ">1</th>
+                      <th class="inningHeader  ">2</th>
+                      <th class="inningHeader  ">3</th>
+                      <th class="inningHeader  ">4</th>
+                      <th class="inningHeader  ">5</th>
+                      <th class="inningHeader  ">6</th>
+                      <th class="inningHeader  ">7</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  <tr class="text-center">
+                    <td class="inning  " data-score="0">0</td>
+                    <td class="inning  " data-score="0">0</td>
+                    <td class="inning  " data-score="0">0</td>
+                    <td class="inning  " data-score="1">1</td>
+                    <td class="inning  " data-score="0">0</td>
+                    <td class="inning  " data-score="0">0</td>
+                    <td class="inning  " data-score="0">0</td>
+                  </tr>
+                  <tr class="home">
+                    <td class="inning  " data-score="0">0</td>
+                    <td class="inning  " data-score="0">0</td>
+                    <td class="inning  " data-score="0">0</td>
+                    <td class="inning  " data-score="0">0</td>
+                    <td class="inning  " data-score="0">0</td>
+                    <td class="inning  " data-score="1">1</td>
+                    <td class="inning  " data-score="0">0</td>
+                  </tr>
+                </tbody>
+                </template>
+              </v-simple-table>
+            </v-col>
+            <v-col cols="1" style="padding: 0px;">
+              <v-simple-table class="grey lighten-3">
+                <template v-slot:default>
+                  <thead>
+                    <tr class="text-center">
+                      <th class="inningHeader">R</th>
+                      <th class="inningHeader">H</th>
+                      <th class="inningHeader">E</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="text-center">
+                      <td class="inning  " data-score="0">0</td>
+                      <td class="inning  " data-score="0">0</td>
+                      <td class="inning  " data-score="0">0</td>
+                    </tr>
+                    <tr class="home">
+                      <td class="inning  " data-score="0">0</td>
+                      <td class="inning  " data-score="0">0</td>
+                      <td class="inning  " data-score="0">0</td>
+                    </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
+            </v-col>
+          </v-row>
+          <v-row>
+            <p>{{ atBats }}</p>
+          </v-row>
+        </div>
       </div>
     </v-card>
   </v-container>
@@ -76,6 +170,8 @@
 <script>
 import GameApi from '@/plugins/axios/modules/game'
 import PlayerApi from '@/plugins/axios/modules/player'
+import TeamApi from '@/plugins/axios/modules/team'
+import AtBatApi from '@/plugins/axios/modules/atBat'
 import draggable from 'vuedraggable'
 import lineupList from '@/components/lineupList.vue'
 import fieldList from '@/components/fieldList.vue'
@@ -104,10 +200,12 @@ export default {
         topLineup: null,
         bottomLineup: null
       },
+      team: {},
       players: [],
       starters: [],
       fields: [],
       defaultFields: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
+      atBats: [],
       errorMessage: '',
       isDeleted: false
     }
@@ -116,14 +214,19 @@ export default {
     this.game.id = Number(this.$route.params.gameId)
     this.fetchGame()
     this.fetchPlayers()
+    this.fetchTeam()
+    this.fetchAtBats()
   },
   mounted() {
     this.addMobPlayers()
   },
  watch: {
-    starters: function() {
+    players: function() {
       this.errorMessage = ''
-      if (this.starters.length <= 9) {
+      if (this.starters.length === 0) {
+        this.addMobPlayers()
+        this.fields = []
+      } else if (this.starters.length <= 9) {
         this.fields = this.defaultFields.filter((number) => number <= this.starters.length)
       } else {
         this.fields = [...this.defaultFields]
@@ -131,11 +234,6 @@ export default {
         this.fields.push(this.starters.length - i)
       }
     },
-    players: function() {
-      if (this.starters.length === 0) {
-        this.addMobPlayers()
-      }
-    }
   },
   methods: {
     saveStarters() {
@@ -159,10 +257,12 @@ export default {
         lineup.push( 
           { 
             'orderNumber': i ,
-            'orderDetail': {
-              'fieldNumber': this.fields[(i - 1)],
-              'playerId': this.starters[(i - 1)].id
-            }
+            'orderDetails': [
+              {
+                'fieldNumber': this.fields[(i - 1)],
+                'playerId': this.starters[(i - 1)].id
+              }
+            ]
           }
         )
       }
@@ -181,6 +281,15 @@ export default {
       PlayerApi.getPlayers()
       .then((res) => {
         this.players = res
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    },
+    fetchTeam() {
+      TeamApi.getTeam()
+      .then((res) => {
+        this.team = res
       })
       .catch((error) => {
         console.log(error)
@@ -210,6 +319,15 @@ export default {
         { 'id': 1003, 'name': 'mob4' },  { 'id': 1004, 'name': 'mob5' }, { 'id': 1005, 'name': 'mob6' }, 
         { 'id': 1006, 'name': 'mob7' },  { 'id': 1007, 'name': 'mob8' }, { 'id': 1008, 'name': 'mob9' },
       )
+    },
+    fetchAtBats() {
+      AtBatApi.getAtBatsByGameId(this.game.id)
+      .then((res) => {
+        this.atBats = res
+      })
+      .catch((error) => {
+        console.log(error)
+      })
     }
   }
 }

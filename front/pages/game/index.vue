@@ -16,8 +16,8 @@
           >
             <v-list-item-content>
               <v-list-item-title>VS {{ game.opponentTeam }}</v-list-item-title>
-              <v-list-item-subtitle>{{ game.date }}</v-list-item-subtitle>
-              <v-list-item-subtitle>{{ game.field }}</v-list-item-subtitle>
+              <v-list-item-subtitle>日付: {{ game.date }}</v-list-item-subtitle>
+              <v-list-item-subtitle>場所: {{ game.field }}</v-list-item-subtitle>
             </v-list-item-content>
             <div class="ml-6 d-flex">
               <p
@@ -73,17 +73,17 @@
           @input="$v.game.opponentTeam.$touch()"
           @blur="$v.game.opponentTeam.$touch()"
         ></v-text-field>
-        <v-dialog
-          ref="dialog"
+        <v-menu
           v-model="isOpenDateModal"
-          :return-value.sync="game.date"
-          persistent
-          width="290px"
+          :close-on-content-click="false"
+          transition="scale-transition"
+          offset-y
+          min-width="auto"
         >
           <template v-slot:activator="{ on, attrs }">
             <v-text-field
               v-model="game.date"
-              label="日付を選択"
+              label="日付"
               prepend-icon="mdi-calendar"
               readonly
               v-bind="attrs"
@@ -95,38 +95,26 @@
           </template>
           <v-date-picker
             v-model="game.date"
+            @input="isOpenDateModal = false"
+            no-title
             scrollable
             locale="jp-ja"
             :day-format="date => new Date(date).getDate()"
-          >
-            <v-spacer></v-spacer>
-            <v-btn
-              text
-              color="primary"
-              @click="isOpenDateModal = false"
-            >
-              戻る
-            </v-btn>
-            <v-btn
-              text
-              color="primary"
-              @click="$refs.dialog.save(game.date)"
-            >
-              決定
-            </v-btn>
-          </v-date-picker>
-        </v-dialog>
+          ></v-date-picker>
+        </v-menu>
         <v-radio-group
           v-model="game.topFlg"
           row
         >
           <v-radio
             label='先攻'
-            value='true'
+            :value="true"
+            @change="game.topFlg = true"
           ></v-radio>
           <v-radio
             label='後攻'
-            value='false'
+            :value="false"
+            @change="game.topFlg = false"
           ></v-radio>
         </v-radio-group>
         <v-row justify="center">
@@ -184,7 +172,7 @@ export default {
         date: null,
         field: null,
         winFlg: null,
-        topFlg: 'true',
+        topFlg: true,
         resultFlg: false,
         lineupingFLg: false,
         topLineup: [],
@@ -323,12 +311,11 @@ export default {
       if (this.$v.$invalid) {
         return
       }
-      if(this.game.topFlg='true') {
+      if(this.game.topFlg) {
         this.game.bottomLineup = this.defaultLineup
       } else {
         this.game.topLineup = this.defaultLineup
       }
-      console.log(this.game)
       GameApi.registerGame(this.game)
       .then((res) => {
         this.$router.push(`/game/${res.id}`)
