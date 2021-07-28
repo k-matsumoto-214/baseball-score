@@ -89,7 +89,9 @@
                       </td>
                     </tr>
                     <tr>
-                      <td>{{ !game.topFlg ? team.name : game.opponentTeam }}</td>
+                      <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        {{ !game.topFlg ? team.name : game.opponentTeam }}
+                      </td>
                     </tr>
                   </tbody>
                 </template>
@@ -158,9 +160,21 @@
               </v-simple-table>
             </v-col>
           </v-row>
-          <v-row>
-            <p>{{ atBats }}</p>
-          </v-row>
+          <div v-if="nowBatter !== null">
+            <inning-info :atBat="atBat" />
+            <v-row justify="center">
+              <v-col cols="12">
+                <pitcher-info
+                  :nowPitcher="nowPitcher"
+                />
+                <batter-info 
+                  :nowBatter="nowBatter"
+                  class="mt-3"
+                />
+              </v-col>
+            </v-row>
+          </div>
+          
         </div>
       </div>
     </v-card>
@@ -175,12 +189,18 @@ import AtBatApi from '@/plugins/axios/modules/atBat'
 import draggable from 'vuedraggable'
 import lineupList from '@/components/lineupList.vue'
 import fieldList from '@/components/fieldList.vue'
+import batterInfo from '@/components/batterInfo.vue'
+import pitcherInfo from '@/components/pitcherInfo.vue'
+import inningInfo from '@/components/inningInfo.vue'
 
 export default {
   components: {
     draggable,
     lineupList,
-    fieldList
+    fieldList,
+    batterInfo,
+    pitcherInfo,
+    inningInfo
   },
   layout: 'loggedIn',
   data() {
@@ -203,30 +223,53 @@ export default {
       team: {},
       players: [],
       starters: [],
+      opponentTeamId: 1000,
       fields: [],
       defaultFields: [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
       atBats: [],
+      atBat: {
+        id: null,
+        teamId: null,
+        gameId: null,
+        lineupNumber: null,
+        batterId: null,
+        pitcherId: null,
+        inning: null,
+        outCount: null,
+        firstRunnerId: null,
+        secondRunnerId: null,
+        thirdRunnerId: null,
+        playerChangeFlg: false,
+        direction: null,
+        completeFlg: false,
+        comment: null,
+        result: null,
+        angle: null,
+        lineupNumber: null,
+        topFlg: false
+      },
+      nowBatter: null,
+      nowPitcher: null,
       errorMessage: '',
-      isDeleted: false
+      isDeleted: false,
+      isStarted: true
     }
   },
   created() {
     this.game.id = Number(this.$route.params.gameId)
     this.fetchGame()
-    this.fetchPlayers()
+    PlayerApi.getPlayers(this.game.id)
+    .then((res) => {
+      this.players = res
+      this.addMobPlayers()
+      this.fetchAtBats()
+    })
     this.fetchTeam()
-    this.fetchAtBats()
-  },
-  mounted() {
-    this.addMobPlayers()
   },
  watch: {
     players: function() {
       this.errorMessage = ''
-      if (this.starters.length === 0) {
-        this.addMobPlayers()
-        this.fields = []
-      } else if (this.starters.length <= 9) {
+      if (this.starters.length <= 9) {
         this.fields = this.defaultFields.filter((number) => number <= this.starters.length)
       } else {
         this.fields = [...this.defaultFields]
@@ -234,6 +277,46 @@ export default {
         this.fields.push(this.starters.length - i)
       }
     },
+    atBats: function() {
+      if (this.game.lineupingStatus === 0) {
+        return
+      }
+      let nowAtBat = null
+      let nowBatterId = null
+      let nowPitcherId = null
+      if (this.isStarted) {
+        nowAtBat = this.atBats.slice(-1)[0]
+        // バッター情報
+        nowBatterId = nowAtBat.batterId
+        this.nowBatter = this.players.filter((player) => player.id === nowBatterId)[0]
+        this.nowBatter.lineupNumber = nowAtBat.lineupNumber
+
+        // ピッチャー情報
+        nowPitcherId = nowAtBat.pitcherId
+        this.nowPitcher = this.players.filter((player) => player.id === nowPitcherId)[0]
+
+      } else {
+        // バッター情報
+        nowBatterId = this.game.topLineup[0].orderDetails.slice(-1)[0].playerId
+        this.nowBatter = this.players.filter((player) => player.id === nowBatterId)[0]
+        this.nowBatter.lineupNumber = 1
+
+        // ピッチャー情報
+        nowPitcherId = this.game.bottomLineup.filter((lineup) => {
+          return lineup.orderDetails.slice(-1)[0].fieldNumber === 1
+        })[0].orderDetails.slice(-1)[0].playerId
+        this.nowPitcher = this.players.filter((player) => player.id === nowPitcherId)[0]
+      }
+      this.atBat.batterId = this.nowBatter.id
+      this.atBat.pitcherId = this.nowPitcher.id
+      this.atBat.outCount = nowAtBat === null ? 0 : nowAtBat.outCount
+      this.atBat.inning = nowAtBat === null ? 1 : nowAtBat.inning
+      this.atBat.topFlg = nowAtBat === null ? 1 : nowAtBat.topFlg
+      // 走者情報
+      this.atBat.firstRunnerId = nowAtBat === null ? null : nowAtBat.firstRunnerId
+      this.atBat.secondRunnerId = nowAtBat === null ? null : nowAtBat.secondRunnerId
+      this.atBat.thirdRunnerId = nowAtBat === null ? null : nowAtBat.thirdRunnerId
+    }
   },
   methods: {
     saveStarters() {
@@ -249,7 +332,7 @@ export default {
       }
       this.game.lineupingStatus = 2
       this.updateGame()
-      location.reload()
+      location.reload();
     },
     createOrders() {
       let lineup = []
@@ -313,11 +396,11 @@ export default {
       })
     },
     addMobPlayers() {
-      if(this.players.some(player => player.id === 1000)) return
+      if (this.players.some(player => player.id === 1000) ) return
       this.players.push(
-        { 'id': 1000, 'name': 'mob1' },  { 'id': 1001, 'name': 'mob2'},  { 'id': 1002, 'name': 'mob3' },  
-        { 'id': 1003, 'name': 'mob4' },  { 'id': 1004, 'name': 'mob5' }, { 'id': 1005, 'name': 'mob6' }, 
-        { 'id': 1006, 'name': 'mob7' },  { 'id': 1007, 'name': 'mob8' }, { 'id': 1008, 'name': 'mob9' },
+        { 'id': 1000, 'name': 'mob1', 'image': null },  { 'id': 1001, 'name': 'mob2', 'image': null},  { 'id': 1002, 'name': 'mob3', 'image': null},  
+        { 'id': 1003, 'name': 'mob4', 'image': null },  { 'id': 1004, 'name': 'mob5', 'image': null }, { 'id': 1005, 'name': 'mob6', 'image': null }, 
+        { 'id': 1006, 'name': 'mob7', 'image': null },  { 'id': 1007, 'name': 'mob8', 'image': null }, { 'id': 1008, 'name': 'mob9', 'image': null },
       )
     },
     fetchAtBats() {
@@ -326,7 +409,12 @@ export default {
         this.atBats = res
       })
       .catch((error) => {
-        console.log(error)
+        if (error.status === 404) {
+          this.isStarted = false
+          this.atBats = []
+        } else {
+          console.log(error)
+        }
       })
     }
   }
