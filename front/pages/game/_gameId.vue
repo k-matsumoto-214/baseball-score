@@ -5,16 +5,7 @@
       max-width="640"
       flat
     >
-      <v-card-text>
-        Game
-      </v-card-text>
-      <v-card-title>
-        VS {{ game.opponentTeam }}
-      </v-card-title>
-      <v-card-subtitle>
-        日付:　{{ game.date }} <br>
-        場所:　{{ game.field }}
-      </v-card-subtitle>
+      <v-card-subtitle></v-card-subtitle>
       <div v-if="!game.resultFlg">
         <div v-if="game.lineupingStatus === 0">
           <v-card-text>
@@ -162,19 +153,272 @@
           </v-row>
           <div v-if="nowBatter !== null">
             <inning-info :atBat="atBat" />
-            <v-row justify="center">
-              <v-col cols="12">
+            <v-row justify="space-between" class="mt-3">
+              <v-col cols="5">
                 <pitcher-info
                   :nowPitcher="nowPitcher"
                 />
+              </v-col>
+              <v-col cols="2" style="margin: auto 0; font-size: 30px; color: #EF5350;">
+                <p class="text-center">VS</p>
+              </v-col>
+              <v-col cols="5">
                 <batter-info 
                   :nowBatter="nowBatter"
-                  class="mt-3"
                 />
               </v-col>
             </v-row>
+            <v-row justify="center" class="my-5">
+              <v-menu>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    color="pink lighten-1"
+                    dark
+                    v-bind="attrs"
+                    v-on="on"
+                    class="white--text mr-5"
+                  >
+                    <span>安打</span>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item>
+                    <v-list-item-title @click="openHitModal(0)">ヒット</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title @click="openHitModal(1)">二塁打</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title @click="openHitModal(2)">三塁打</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title @click="openHitModal(3)">本塁打</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+              <v-menu>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    color="light-blue lighten-1"
+                    dark
+                    v-bind="attrs"
+                    v-on="on"
+                    class="white--text mr-5"
+                  >
+                  　<span>出塁</span>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item>
+                    <v-list-item-title>四球</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>死球</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>エラー</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>振逃</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>特殊</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+              <v-menu>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    color="amber lighten-1"
+                    dark
+                    v-bind="attrs"
+                    v-on="on"
+                    class="white--text mr-5"
+                  >
+                  　<span>犠打</span>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item>
+                    <v-list-item-title>犠打</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>犠飛</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+              <v-menu>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    color="grey lighten-1"
+                    dark
+                    v-bind="attrs"
+                    v-on="on"
+                    class="white--text"
+                  >
+                    <span>凡打</span>
+                  </v-btn>
+                </template>
+                <v-list>
+                  <v-list-item>
+                    <v-list-item-title>ゴロ</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>フライ</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>三振</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item>
+                    <v-list-item-title>特殊</v-list-item-title>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
+              <!-- <v-btn
+                color="teal lighten-2"
+                dark
+                v-bind="attrs"
+                v-on="on"
+                class="white--text"
+              >
+                <span>イベント</span>
+              </v-btn> -->
+              <v-dialog
+                v-model="isOpenHitModal"
+                max-width="640"
+                fullscreen
+                ref="hit_modal"
+              >
+                <v-card>
+                  <v-container>
+                    <p class="mt-2">ランナー状況を入力してください</p>
+                    <v-row justify="center">
+                      <v-col cols="6">
+                        <p>一塁</p>
+                        <draggable v-model="firstRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                          <runner-list
+                            v-for="(firstRunner) in firstRunners"
+                            :key="firstRunner.id"
+                            :player="firstRunner"
+                          />
+                          <p v-if="firstRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                        </draggable>
+                      </v-col>
+                      <v-col cols="6">
+                        <p>二塁</p>
+                        <draggable v-model="secondRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                          <runner-list
+                            v-for="(secondRunner) in secondRunners"
+                            :key="secondRunner.id"
+                            :player="secondRunner"
+                          />
+                          <p v-if="secondRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                        </draggable>
+                      </v-col>
+                    </v-row>
+                    <v-row justify="center">
+                      <v-col cols="6">
+                        <p>三塁</p>
+                        <draggable v-model="thirdRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                          <runner-list
+                            v-for="(thirdRunner) in thirdRunners"
+                            :key="thirdRunner.id"
+                            :player="thirdRunner"
+                          />
+                          <p v-if="thirdRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                        </draggable>
+                      </v-col>
+                      <v-col cols="6">
+                        <p>得点</p>
+                        <draggable v-model="homeRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                          <runner-list
+                            v-for="(homeRunner) in homeRunners"
+                            :key="homeRunner.id"
+                            :player="homeRunner"
+                          />
+                          <p v-if="homeRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                        </draggable>
+                      </v-col>
+                    </v-row>
+                    <v-row>
+                      <v-col cols="6">
+                        <p>走塁死</p>
+                        <draggable v-model="outRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                          <runner-list
+                            v-for="(outRunner) in outRunners"
+                            :key="outRunner.id"
+                            :player="outRunner"
+                          />
+                          <p v-if="outRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                        </draggable>
+                      </v-col>
+                    </v-row>
+                    <p class="mt-2">打球方向を選択してください</p>
+                    <hit-direction-selector
+                      class="mt-5"
+                      :direction="atBat.direction"
+                      @change-direction="atBat.direction=$event"
+                     />
+                    <v-text-field
+                      v-model="atBat.comment"
+                      :error-messages="commentErrors"
+                      :counter="200"
+                      outlined
+                      label="コメント"
+                      class="mt-3"
+                      @input="$v.atBat.comment.$touch()"
+                      @blur="$v.atBat.comment.$touch()"
+                    ></v-text-field>
+                    <p class="text-center" style="color: #FF4081">{{ directionErrorMessage }}</p>
+                    <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
+                    <v-row justify="center">
+                      <v-btn
+                        class="mr-4 mb-4"
+                        color="primary"
+                        @click="saveResult()"
+                      >
+                        確定
+                      </v-btn>
+                      <v-btn
+                        class="mb-4"
+                        @click="closeHitModal()"
+                      >
+                        戻る
+                      </v-btn>
+                    </v-row>
+                  </v-container>
+                </v-card>
+              </v-dialog>
+              <v-dialog
+                v-model="isOpenRbiAndEernedModal"
+                max-width="640"
+                fullscreen
+              >
+                <v-card>
+                  <v-container>
+                    <div>
+                      <p class="mt-2">自責点、打点を設定してください</p>
+                      <rbi-earned-selector
+                        v-for="homeRunner, idx in homeRunners" :key="homeRunner.id"
+                        :player="homeRunner"
+                        @change-earned-flg="homeRunners[idx].earnedFlg = $event"
+                        @change-rbi-flg="homeRunners[idx].rbiFlg = $event"
+                      />
+                    </div>
+                    <v-row justify="center">
+                      <v-btn
+                        class="mt-8 mb-4"
+                        color="primary"
+                        @click="saveResult()"
+                      >
+                        確定
+                      </v-btn>
+                    </v-row>
+                  </v-container>
+                </v-card>
+              </v-dialog>
+            </v-row>
           </div>
-          
         </div>
       </div>
     </v-card>
@@ -182,16 +426,23 @@
 </template>
 
 <script>
+import { validationMixin } from 'vuelidate'
+import { maxLength } from 'vuelidate/lib/validators'
 import GameApi from '@/plugins/axios/modules/game'
 import PlayerApi from '@/plugins/axios/modules/player'
 import TeamApi from '@/plugins/axios/modules/team'
 import AtBatApi from '@/plugins/axios/modules/atBat'
+import RunApi from '@/plugins/axios/modules/run'
+import EventApi from '@/plugins/axios/modules/event'
+import RunOutApi from '@/plugins/axios/modules/runOut'
 import draggable from 'vuedraggable'
 import lineupList from '@/components/lineupList.vue'
 import fieldList from '@/components/fieldList.vue'
 import batterInfo from '@/components/batterInfo.vue'
 import pitcherInfo from '@/components/pitcherInfo.vue'
 import inningInfo from '@/components/inningInfo.vue'
+import runnerList from '@/components/runnerList.vue'
+import rbiEarnedSelector from '@/components/rbiEarnedSelector.vue'
 
 export default {
   components: {
@@ -200,9 +451,17 @@ export default {
     fieldList,
     batterInfo,
     pitcherInfo,
-    inningInfo
+    inningInfo,
+    runnerList,
+    rbiEarnedSelector
   },
   layout: 'loggedIn',
+  mixins: [validationMixin],
+  validations: {
+    atBat: {
+      comment: { maxLength: maxLength(200) }
+    }
+  },
   data() {
     return {
       game: {
@@ -231,7 +490,6 @@ export default {
         id: null,
         teamId: null,
         gameId: null,
-        lineupNumber: null,
         batterId: null,
         pitcherId: null,
         inning: null,
@@ -244,15 +502,102 @@ export default {
         completeFlg: false,
         comment: null,
         result: null,
-        angle: null,
         lineupNumber: null,
         topFlg: false
       },
+      events: [],
+      eventBefore: {
+        id: null,
+        gameId: null,
+        teamId: null,
+        inning: null,
+        atBatId: null,
+        resultFirstRunnerId: null,
+        resultSecondRunnerId: null,
+        resultThirdRunnerId: null,
+        resultOutCount: null,
+        timing : 0
+      },
+      eventAfter: {
+        id: null,
+        gameId: null,
+        teamId: null,
+        inning: null,
+        atBatId: null,
+        resultFirstRunnerId: null,
+        resultSecondRunnerId: null,
+        resultThirdRunnerId: null,
+        resultOutCount: null,
+        timing : 1
+      },
+      runOuts: [],
+      runOut: {
+        id :null,
+        playerId: null,
+        teamId: null,
+        eventId: null
+      },
+      runs: [],
+      run: {
+        id: null,
+        teamId: null,
+        gameId: null,
+        eventId: null,
+        atBatId: null,
+        batterId: null,
+        pitcherId: null,
+        runnerId: null,
+        inning: null,
+        earndFlg: null,
+        rbiFlg: null
+      },
+      specials: [],
+      special: {
+        id: null,
+        eventId: null,
+        teamId: null,
+        comment: null
+      },
+      errors: [],
+      error: {
+        id: null,
+        teamId: null,
+        eventId: null,
+        playerId: null
+      },
+      steals: [],
+      steal: {
+        id: null,
+        teamId: null,
+        eventId: null,
+        playerId: null
+      },
+      batteryErrors: [],
+      batteryError: {
+        id: null,
+        eventId :null,
+        teamId: null,
+        pitcherId: null,
+        catcherId: null,
+        wpFlg: null
+      },
+      firstRunner: null,
+      secondRunner: null,
+      thirdRunner: null,
+      firstRunners: [],
+      secondRunners: [],
+      thirdRunners: [],
+      homeRunners: [],
+      outRunners: [],
       nowBatter: null,
       nowPitcher: null,
       errorMessage: '',
+      directionErrorMessage: '',
+      runnerErrorMessage: '',
       isDeleted: false,
-      isStarted: true
+      isStarted: false,
+      isOpenHitModal: false,
+      isOpenRbiAndEernedModal: false
     }
   },
   created() {
@@ -295,6 +640,9 @@ export default {
         nowPitcherId = nowAtBat.pitcherId
         this.nowPitcher = this.players.filter((player) => player.id === nowPitcherId)[0]
 
+        // 試合情報
+        this.atBat.id = nowAtBat.id
+
       } else {
         // バッター情報
         nowBatterId = this.game.topLineup[0].orderDetails.slice(-1)[0].playerId
@@ -312,10 +660,35 @@ export default {
       this.atBat.outCount = nowAtBat === null ? 0 : nowAtBat.outCount
       this.atBat.inning = nowAtBat === null ? 1 : nowAtBat.inning
       this.atBat.topFlg = nowAtBat === null ? 1 : nowAtBat.topFlg
+      this.atBat.lineupNumber = nowAtBat === null ? 1 : nowAtBat.lineupNumber
+
       // 走者情報
       this.atBat.firstRunnerId = nowAtBat === null ? null : nowAtBat.firstRunnerId
       this.atBat.secondRunnerId = nowAtBat === null ? null : nowAtBat.secondRunnerId
       this.atBat.thirdRunnerId = nowAtBat === null ? null : nowAtBat.thirdRunnerId
+      this.setRunners()
+
+      // 試合情報
+      this.atBat.gameId = this.game.id
+      this.atBat.teamId = this.game.teamId
+
+      if (!this.isStarted) { // 試合開始一番打者の打席登録
+        AtBatApi.registerAtBat(this.atBat)
+        .then(() => {
+          this.fetchAtBats()
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+      }
+    }
+  },
+  computed: {
+    commentErrors () {
+      const errors = []
+      if (!this.$v.atBat.comment.$dirty) return errors
+      !this.$v.atBat.comment.maxLength && errors.push('コメントは200文字以内です。')
+      return errors
     }
   },
   methods: {
@@ -406,16 +779,272 @@ export default {
     fetchAtBats() {
       AtBatApi.getAtBatsByGameId(this.game.id)
       .then((res) => {
+        this.isStarted = true
         this.atBats = res
       })
       .catch((error) => {
         if (error.status === 404) {
-          this.isStarted = false
           this.atBats = []
         } else {
           console.log(error)
         }
       })
+    },
+    setRunners() {
+      if (this.atBat.firstRunnerId !== null) {
+        this.firstRunner = this.players.filter((player) => player.id === this.atBat.firstRunnerId)[0]
+      }
+      if (this.atBat.secondRunnerId !== null) {
+        this.secondRunner = this.players.filter((player) => player.id === this.atBat.secondRunnerId)[0]
+      }
+      if (this.atBat.thirdRunnerId !== null) {
+        this.thirdRunner = this.players.filter((player) => player.id === this.atBat.thirdRunnerId)[0]
+      }
+    },
+    openHitModal(val) {
+      this.directionErrorMessage = ''
+      this.runnerErrorMessage = ''
+      this.isOpenHitModal = true
+      this.atBat.result = val
+      switch (val) {
+        case 0: {
+          this.firstRunners.push(this.nowBatter)
+          if(this.firstRunner !== null) {
+            this.secondRunners.push(this.firstRunner)
+          }
+          if(this.secondRunner !== null) {
+            this.thirdRunners.push(this.secondRunner)
+          }
+          if(this.thirdRunner !== null) {
+            this.homeRunners.push(this.thirdRunner)
+          }
+          break
+        }
+        case 1: {
+          this.secondRunners.push(this.nowBatter)
+          if(this.firstRunner !== null) {
+            this.thirdRunners.push(this.firstRunner)
+          }
+          if(this.secondRunner !== null) {
+            this.homeRunners.push(this.secondRunner)
+          }
+          if(this.thirdRunner !== null) {
+            this.homeRunners.push(this.thirdRunner)
+          }
+          break
+        }
+        case 2: {
+          this.thirdRunners.push(this.nowBatter)
+          if(this.firstRunner !== null) {
+            this.homeRunners.push(this.firstRunner)
+          }
+          if(this.secondRunner !== null) {
+            this.homeRunners.push(this.secondRunner)
+          }
+          if(this.thirdRunner !== null) {
+            this.homeRunners.push(this.thirdRunner)
+          }
+          break
+        }
+        case 3: {
+          this.homeRunners.push(this.nowBatter)
+          if(this.firstRunner !== null) {
+            this.homeRunners.push(this.firstRunner)
+          }
+          if(this.secondRunner !== null) {
+            this.homeRunners.push(this.secondRunner)
+          }
+          if(this.thirdRunner !== null) {
+            this.homeRunners.push(this.thirdRunner)
+          }
+          break
+        }
+      }
+    },
+    saveResult() {
+      this.directionErrorMessage = ''
+      this.runnerErrorMessage = ''
+      if (this.atBat.direction === null) {
+        this.directionErrorMessage = '打球方向を選択してください。'
+        return
+      }
+      if (this.firstRunners.length > 1) {
+        this.runnerErrorMessage = '一塁ランナーが重複しています。'
+        return
+      }
+      if (this.secondRunners.length > 1) {
+        this.runnerErrorMessage = '二塁ランナーが重複しています。'
+        return
+      }
+      if (this.thirdRunners.length > 1) {
+        this.runnerErrorMessage = '三塁ランナーが重複しています。'
+        return
+      }
+      if (this.atBat.outCount + this.outRunners.length > 3) {
+        this.runnerErrorMessage = 'アウトの合計数が3を超えています。'
+        return
+      }
+      // 得点がある場合は自責点・打点の確認を行う
+      if (this.homeRunners.length > 0 && !this.isOpenRbiAndEernedModal) {
+        this.homeRunners.filter((homeRunner) => {
+          homeRunner.earnedFlg = true
+          homeRunner.rbiFlg = true
+        })
+        this.isOpenRbiAndEernedModal = true
+        return
+      } else {
+        this.isOpenRbiAndEernedModal = false
+      }
+      // 打席結果イベントの登録処理：　親イベント
+      if (this.outRunners.length !== 0 || this.homeRunners.length !== 0) {
+        let newEvent = {
+          id: null,
+          gameId: this.game.id,
+          teamId: this.game.teamId,
+          inning: this.atBat.inning,
+          atBatId: this.atBat.id,
+          resultFirstRunnerId: this.firstRunners.length !== 0 ? this.firstRunners[0].id : null,
+          resultSecondRunnerId: this.secondRunners.length !== 0 ? this.secondRunners[0].id : null,
+          resultThirdRunnerId: this.thirdRunners.length !== 0 ? this.thirdRunners[0].id : null,
+          resultOutCount: this.atBat.outCount + this.outRunners.length,
+          timing: 1 // 打撃時イベント
+        }
+        EventApi.registerEvent(newEvent)
+        .then((res) => {
+
+          // 打席結果イベントの登録処理：　走塁死
+          this.outRunners.filter((outRunner) => {
+            let newRunOut = {
+              id: null,
+              playerId: outRunner.id,
+              teamId: this.game.teamId,
+              eventId: res.id
+            }
+            RunOutApi.registerRunOut(newRunOut)
+            .catch((error) => {
+              console.log(error)
+            })
+          })
+
+          // 打席結果イベントの登録処理：　得点
+          this.homeRunners.filter((homeRunner) => {
+            let newRun = {
+              id: null,
+              teamId: this.game.teamId,
+              gameId: this.game.id,
+              eventId: res.id,
+              atBatId: this.atBat.id,
+              batterId: this.atBat.batterId,
+              pitcherId: this.atBat.pitcherId,
+              runnerId: homeRunner.id,
+              inning: this.atBat.inning,
+              earnedFlg: homeRunner.earnedFlg,
+              rbiFlg: homeRunner.rbiFlg
+            }
+            RunApi.registerRun(newRun)
+            .catch((error) => {
+              console.log(error)
+            })
+          })
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+      }
+      
+      // 打席結果の登録処理
+      this.atBat.completeFlg = true
+      AtBatApi.updateAtBat(this.atBat)
+      .then(() => {
+        let newAtBat = {
+          gameId: this.atBat.gameId,
+          inning: this.atBat.inning,
+          outCount: null,
+          pitcherId: this.atBat.pitcherId,
+          batterId: null,
+          firstRunnerId: null,
+          secondRunnerId: null,
+          firstRunnerId: null,
+          playerChangeFlg: false,
+          direction: null,
+          completeFlg: false,
+          comment: null,
+          result: null,
+          lineupNumber: null,
+          topFlg: this.atBat.topFlg
+        }
+        const outCount = this.outRunners.length + this.atBat.outCount; // ToDo: アウトカウントの確認　イベントと打席結果の総合計
+        const isChange = outCount < 3 ? false : true  // 3アウトになっていなければ攻撃継続
+        // 次の攻撃の打順をチェック
+        if (isChange) {
+          if (this.atBat.inning = 1 && this.atBat.topFlg) { // 1回裏の場合は1番から
+            newAtBat.lineupNumber = 1
+            newAtBat.batterId = 
+              this.game.bottomLineup.filter((lineup) => {
+                return lineup.orderNumber === newAtBat.lineupNumber
+              })[0].orderDetails.slice(-1)[0].playerId
+          } else {
+            const beforeAtBat = this.atBats.filter((atBat) => {
+              return atBat.topFlg !== this.atBat.topFlg
+            }).slice(-1)[0]
+            const beforeLineup = beforeAtBat.topFlg ? this.game.topLineup : this.game.bottomLineup //打者ID取得に使うラインナップを決定
+            
+            if (beforeAtBat.completeFlg) { // 前回攻撃時の最終打者の攻撃が終了していれば打順を＋1
+              newAtBat.lineupNumber = 
+                beforeAtBat.lineupNumber + 1 <= beforeLineup.length ? beforeAtBat.lineupNumber + 1 : 1
+            } else {
+              newAtBat.lineupNumber = beforeAtBat.lineupNumber
+            }
+
+            // バッターIDを取得する
+            newAtBat.batterId = this.game.beforeLineup.filter((lineup) => {
+              return lineup.orderNumber === newAtBat.lineupNumber
+            })[0].orderDetails.slice(-1)[0].playerId
+
+            newAtBat.topFlg = beforeAtBat.topFlg // 表裏フラグを設定
+          }
+        } else {
+          const beforeLineup = this.atBat.topFlg ? this.game.topLineup : this.game.bottomLineup //打者ID取得に使うラインナップを決定
+          newAtBat.lineupNumber = this.atBat.lineupNumber + 1 <= beforeLineup.length ? this.atBat.lineupNumber + 1 : 1
+          newAtBat.batterId = beforeLineup.filter((lineup) => {
+            return lineup.orderNumber === newAtBat.lineupNumber
+          })[0].orderDetails.slice(-1)[0].playerId
+          // 攻撃継続の時はランナーも引き継ぐ
+          newAtBat.firstRunnerId = this.firstRunners.length !== 0 ? this.firstRunners[0].id : null
+          newAtBat.secondRunnerId = this.secondRunners.length !== 0 ? this.secondRunners[0].id : null
+          newAtBat.thirdRunnerId = this.thirdRunners.length !== 0 ? this.thirdRunners[0].id : null
+        }
+        AtBatApi.registerAtBat(newAtBat)
+        .then(() => {
+          this.closeHitModal()
+          this.resetRunner()
+          this.fetchAtBats()
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+    },
+    resetRunners() {
+      this.firstRunners = []
+      this.thirdRunners = []
+      this.secondRunners = []
+      this.homeRunners = []
+      this.outRunners = []
+    },
+    resetRunner() {
+      this.firstRunner = null
+      this.thirdRunner = null
+      this.secondRunner = null
+    },
+    closeHitModal() {
+      this.isOpenHitModal = false
+      this.$refs.hit_modal.scrollTop = 0;
+      this.resetRunners()
+      this.atBat.direction = null
     }
   }
 }

@@ -5,12 +5,12 @@
       max-width="640"
       flat
     >
-      <v-card-text>
+      <v-card-text class="pb-0">
         Team
       </v-card-text>
       <div v-if="!isEdit">
         <v-img
-          :src="team.image ? team.image : 'noimage.jpg'"
+          :src="team.image ? team.image : 'noimage-team.jpg'"
         ></v-img>
         <v-card-title>
           {{ team.name}}

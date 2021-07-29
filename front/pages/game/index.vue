@@ -5,7 +5,7 @@
       max-width="640"
       flat
     >
-      <v-card-text>
+      <v-card-text class="pb-0">
         Game
       </v-card-text>
       <v-list three-line>

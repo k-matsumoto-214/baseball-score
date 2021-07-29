@@ -10,7 +10,7 @@
       </v-card-text>
       <div v-if="!isEdit">
         <v-img
-          :src="player.image !== null ? player.image : '../noimage.jpg'"
+          :src="player.image !== null ? player.image : '../noimage.png'"
         ></v-img>
         <v-card-title>
           {{ player.name }}

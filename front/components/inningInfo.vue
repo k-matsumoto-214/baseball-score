@@ -38,6 +38,9 @@ export default {
       if (isFirst && isSecond && !isThird) {
         return '../runner-1-2.png'
       }
+      if (isFirst && !isSecond && isThird) {
+        return '../runner-1-3.png'
+      }
       if (isFirst && isSecond && isThird) {
         return '../runner-1-2-3.png'
       }
