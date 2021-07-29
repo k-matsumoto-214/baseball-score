@@ -974,15 +974,19 @@ export default {
           topFlg: this.atBat.topFlg
         }
         const outCount = this.outRunners.length + this.atBat.outCount; // ToDo: アウトカウントの確認　イベントと打席結果の総合計
-        const isChange = outCount < 3 ? false : true  // 3アウトになっていなければ攻撃継続
+        const isChange = (outCount === 3)  // 3アウトになっていれば交代
         // 次の攻撃の打順をチェック
         if (isChange) {
-          if (this.atBat.inning = 1 && this.atBat.topFlg) { // 1回裏の場合は1番から
+          if (this.atBat.inning === 1 && this.atBat.topFlg) { // 1回裏の場合は1番から
             newAtBat.lineupNumber = 1
             newAtBat.batterId = 
               this.game.bottomLineup.filter((lineup) => {
                 return lineup.orderNumber === newAtBat.lineupNumber
               })[0].orderDetails.slice(-1)[0].playerId
+
+            // イニングと表裏フラグを設定
+            newAtBat.topFlg = false
+            newAtBat.inning = 1          
           } else {
             const beforeAtBat = this.atBats.filter((atBat) => {
               return atBat.topFlg !== this.atBat.topFlg
@@ -991,17 +995,21 @@ export default {
             
             if (beforeAtBat.completeFlg) { // 前回攻撃時の最終打者の攻撃が終了していれば打順を＋1
               newAtBat.lineupNumber = 
-                beforeAtBat.lineupNumber + 1 <= beforeLineup.length ? beforeAtBat.lineupNumber + 1 : 1
+                beforeAtBat.lineupNumber < beforeLineup.length ? beforeAtBat.lineupNumber + 1 : 1
             } else {
               newAtBat.lineupNumber = beforeAtBat.lineupNumber
             }
 
             // バッターIDを取得する
-            newAtBat.batterId = this.game.beforeLineup.filter((lineup) => {
+            newAtBat.batterId = beforeLineup.filter((lineup) => {
               return lineup.orderNumber === newAtBat.lineupNumber
             })[0].orderDetails.slice(-1)[0].playerId
 
-            newAtBat.topFlg = beforeAtBat.topFlg // 表裏フラグを設定
+            // イニングと表裏フラグを設定
+            newAtBat.topFlg = beforeAtBat.topFlg 
+            console.log(this.atBat.topFlg)
+            newAtBat.inning = this.atBat.topFlg ? this.atBat.inning : (this.atBat.inning + 1)
+            console.log(this.atBat.inning)
           }
         } else {
           const beforeLineup = this.atBat.topFlg ? this.game.topLineup : this.game.bottomLineup //打者ID取得に使うラインナップを決定
