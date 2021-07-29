@@ -397,7 +397,7 @@
                 <v-card>
                   <v-container>
                     <div>
-                      <p class="mt-2">自責点、打点を設定してください</p>
+                      <p class="mt-2">得点の自責点、打点を設定してください</p>
                       <rbi-earned-selector
                         v-for="homeRunner, idx in homeRunners" :key="homeRunner.id"
                         :player="homeRunner"
