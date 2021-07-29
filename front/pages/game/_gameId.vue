@@ -1007,9 +1007,7 @@ export default {
 
             // イニングと表裏フラグを設定
             newAtBat.topFlg = beforeAtBat.topFlg 
-            console.log(this.atBat.topFlg)
             newAtBat.inning = this.atBat.topFlg ? this.atBat.inning : (this.atBat.inning + 1)
-            console.log(this.atBat.inning)
           }
         } else {
           const beforeLineup = this.atBat.topFlg ? this.game.topLineup : this.game.bottomLineup //打者ID取得に使うラインナップを決定
