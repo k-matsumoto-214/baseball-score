@@ -977,6 +977,7 @@ export default {
         const isChange = (outCount === 3)  // 3アウトになっていれば交代
         // 次の攻撃の打順をチェック
         if (isChange) {
+          newAtBat.outCount = 0 // 攻守交替の場合はアウトカウントリセット
           if (this.atBat.inning === 1 && this.atBat.topFlg) { // 1回裏の場合は1番から
             newAtBat.lineupNumber = 1
             newAtBat.batterId = 
@@ -1019,6 +1020,8 @@ export default {
           newAtBat.firstRunnerId = this.firstRunners.length !== 0 ? this.firstRunners[0].id : null
           newAtBat.secondRunnerId = this.secondRunners.length !== 0 ? this.secondRunners[0].id : null
           newAtBat.thirdRunnerId = this.thirdRunners.length !== 0 ? this.thirdRunners[0].id : null
+          // 継続の場合は打席のアウト数＋打撃後のアウト数がアウトカウント
+          newAtBat.outCount = this.atBat.outCount + this.outRunners.length
         }
         AtBatApi.registerAtBat(newAtBat)
         .then(() => {
