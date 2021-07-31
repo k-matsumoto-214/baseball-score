@@ -12,7 +12,8 @@ export default {
       resultSecondRunnerId: event.resultSecondRunnerId,
       resultThirdRunnerId: event.resultThirdRunnerId,
       resultOutCount: event.resultOutCount,
-      timing: event.timing
+      timing: event.timing,
+      comment: event.comment
     })
   }
 }
