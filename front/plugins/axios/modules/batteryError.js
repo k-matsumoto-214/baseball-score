@@ -2,7 +2,7 @@ import { axios } from '../index.js';
 
 export default {
   registerBatteryError(batteryError) {
-    return axios.$post(`batteryErrors`, {
+    return axios.$post(`battery-errors`, {
       id: null,
       eventId: batteryError.eventId,
       teamId: batteryError.teamId,
