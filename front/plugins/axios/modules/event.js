@@ -13,7 +13,8 @@ export default {
       resultThirdRunnerId: event.resultThirdRunnerId,
       resultOutCount: event.resultOutCount,
       timing: event.timing,
-      comment: event.comment
+      comment: event.comment,
+      eventType: event.eventType
     })
   }
 }
