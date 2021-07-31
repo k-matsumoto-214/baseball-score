@@ -597,6 +597,41 @@
                 </v-container>
               </v-card>
             </v-dialog>
+            <v-dialog
+              v-model="isOpenEernedModal"
+              max-width="640"
+              fullscreen
+            >
+              <v-card>
+                <v-container>
+                  <div>
+                    <p class="mt-2">得点の自責点を設定してください</p>
+                    <div class="d-flex" v-if="thirdRunner !== null">
+                      <v-list-item-avatar>
+                        <v-img :src="thirdRunner.image ? thirdRunner.image : '../noimage.png'"></v-img>
+                      </v-list-item-avatar>
+                      <v-list-item-content>
+                        <v-list-item-title v-text="thirdRunner.name" style="margin-left: 5px"></v-list-item-title>
+                      </v-list-item-content>
+                      <v-checkbox
+                        v-model="thirdRunner.earnedFlg"
+                        :label="'自責点'"
+                        class="mr-4 ml-2"
+                      ></v-checkbox>
+                    </div>
+                  </div>
+                  <v-row justify="center">
+                    <v-btn
+                      class="mt-8 mb-4"
+                      color="primary"
+                      @click="saveSteal()"
+                    >
+                      確定
+                    </v-btn>
+                  </v-row>
+                </v-container>
+              </v-card>
+            </v-dialog>
           </div>
         </div>
       </div>
@@ -614,6 +649,7 @@ import AtBatApi from '@/plugins/axios/modules/atBat'
 import RunApi from '@/plugins/axios/modules/run'
 import EventApi from '@/plugins/axios/modules/event'
 import RunOutApi from '@/plugins/axios/modules/runOut'
+import StealApi from '@/plugins/axios/modules/steal'
 import draggable from 'vuedraggable'
 import lineupList from '@/components/lineupList.vue'
 import fieldList from '@/components/fieldList.vue'
@@ -760,7 +796,8 @@ export default {
       isStarted: false,
       isOpenResultModal: false,
       isOpenRbiAndEernedModal: false,
-      isOpenStealModal: false
+      isOpenStealModal: false,
+      isOpenEernedModal: false
     }
   },
   created() {
@@ -1281,7 +1318,7 @@ export default {
               console.log(error)
             })
           })
-          
+
         })
         .catch((error) => {
           console.log(error)
@@ -1492,6 +1529,10 @@ export default {
         return (runner !== null && runner.successFlg === false)
       })
       const outCount = this.atBat.outCount + outRunners.length
+      if (outCount > 3) {
+        this.stealErrorMessage = 'アウトカントが3を超えています。'
+        return
+      }
 
       // 盗塁企図が0でないときイベントの登録
       if (stealRunners.length !== 0) {
@@ -1521,7 +1562,6 @@ export default {
               catcherId: catcherId,
               successFlg: stealRunner.successFlg
             }
-            console.log(newSteal)
             StealApi.registerSteal(newSteal)
             .catch((error) => {
               console.log(error)
@@ -1549,8 +1589,90 @@ export default {
             })
           }
 
+          // 打席テーブルのアウトカウント・ランナーを更新
+          if (outCount < 3) {
+            this.atBat.firstRunnerId = resultFirstRunner !== null ? resultFirstRunner.id : null
+            this.atBat.secondRunnerId = resultSecondRunner !== null ? resultSecondRunner.id : null
+            this.atBat.thirdRunnerId = resultThirdRunner !== null ? resultThirdRunner.id : null
+            this.atBat.outCount = outCount
+            AtBatApi.updateAtBat(this.atBat)
+            .then(() => {
+              this.resetRunner()
+              this.fetchAtBats()
+            })
+            .catch((error) => {
+              console.log(error)
+            })
+          // アウトが3つの時は攻守交替・打席結果は未完了で更新
+          } else {
+            AtBatApi.updateAtBat(this.atBat)
+            .then(() => {
+              let newAtBat = {
+                gameId: this.atBat.gameId,
+                inning: this.atBat.inning,
+                outCount: 0,
+                pitcherId: null,
+                batterId: null,
+                firstRunnerId: null,
+                secondRunnerId: null,
+                firstRunnerId: null,
+                playerChangeFlg: false,
+                direction: null,
+                completeFlg: false,
+                comment: null,
+                result: null,
+                lineupNumber: null,
+                topFlg: false,
+              }
+              // 次の攻撃の打順をチェック
+              if (this.atBat.inning === 1 && this.atBat.topFlg) { // 1回裏の場合は1番から
+                newAtBat.lineupNumber = 1
+                newAtBat.batterId = 
+                  this.game.bottomLineup.filter((lineup) => {
+                    return lineup.orderNumber === newAtBat.lineupNumber
+                  })[0].orderDetails.slice(-1)[0].playerId
+
+                // イニングと表裏フラグを設定
+                newAtBat.topFlg = false
+                newAtBat.inning = 1          
+              } else {
+                const beforeAtBat = this.atBats.filter((atBat) => {
+                  return atBat.topFlg !== this.atBat.topFlg
+                }).slice(-1)[0]
+                const beforeLineup = beforeAtBat.topFlg ? this.game.topLineup : this.game.bottomLineup //打者ID取得に使うラインナップを決定
+                
+                if (beforeAtBat.completeFlg) { // 前回攻撃時の最終打者の攻撃が終了していれば打順を＋1
+                  newAtBat.lineupNumber = 
+                    beforeAtBat.lineupNumber < beforeLineup.length ? beforeAtBat.lineupNumber + 1 : 1
+                } else {
+                  newAtBat.lineupNumber = beforeAtBat.lineupNumber
+                }
+
+                // バッターIDを取得する
+                newAtBat.batterId = beforeLineup.filter((lineup) => {
+                  return lineup.orderNumber === newAtBat.lineupNumber
+                })[0].orderDetails.slice(-1)[0].playerId
+
+                // イニングと表裏フラグを設定
+                newAtBat.topFlg = beforeAtBat.topFlg 
+                newAtBat.inning = this.atBat.topFlg ? this.atBat.inning : (this.atBat.inning + 1)
+              }
+              AtBatApi.registerAtBat(newAtBat)
+              .then(() => {
+                this.resetRunner()
+                this.fetchAtBats()
+              })
+              .catch((error) => {
+                console.log(error)
+              })
+            })
+            .catch((error) => {
+              console.log(error)
+            })
+          }
         })
       }
+      this.closeStealModal()
     }
   }
 }
