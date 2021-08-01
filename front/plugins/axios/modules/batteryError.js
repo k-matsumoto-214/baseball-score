@@ -10,5 +10,9 @@ export default {
       catcherId: batteryError.catcherId,
       wpFlg: batteryError.wpFlg
     })
+  },
+
+  getBatteryErrorByEventId(eventId) {
+    return axios.$get(`games/battery-errors/${eventId}`)
   }
 }

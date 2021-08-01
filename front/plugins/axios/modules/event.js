@@ -16,5 +16,9 @@ export default {
       comment: event.comment,
       eventType: event.eventType
     })
+  },
+
+  getEventsByAtBatId(atBatId) {
+    return axios.$get(`games/events/${atBatId}`)
   }
 }

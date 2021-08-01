@@ -318,6 +318,13 @@
                 <span>特殊</span>
               </v-btn>
             </v-row>
+            <event-info
+              v-if="eventDetails.length !== 0"
+              :eventDetails="eventDetails"
+              :players="players"
+            />
+
+
             <v-dialog
               v-model="isOpenResultModal"
               max-width="640"
@@ -1073,6 +1080,7 @@ import pitcherInfo from '@/components/pitcherInfo.vue'
 import inningInfo from '@/components/inningInfo.vue'
 import runnerList from '@/components/runnerList.vue'
 import rbiEarnedSelector from '@/components/rbiEarnedSelector.vue'
+import eventInfo from '@/components/eventInfo.vue'
 
 export default {
   components: {
@@ -1083,7 +1091,8 @@ export default {
     pitcherInfo,
     inningInfo,
     runnerList,
-    rbiEarnedSelector
+    rbiEarnedSelector,
+    eventInfo
   },
   layout: 'loggedIn',
   mixins: [validationMixin],
@@ -1142,6 +1151,13 @@ export default {
       event: {
         comment: null
       },
+      eventDetails: [],
+      steals: [],
+      special: {},
+      error: {},
+      runOuts: [],
+      runs: [],
+      batteryError: null,
       firstRunner: null,
       secondRunner: null,
       thirdRunner: null,
@@ -1193,7 +1209,7 @@ export default {
         this.fields.push(this.starters.length - i)
       }
     },
-    atBats: function() {
+    atBats: async function() {
       if (this.game.lineupingStatus === 0) {
         return
       }
@@ -1213,6 +1229,27 @@ export default {
 
         // 試合情報
         this.atBat.id = nowAtBat.id
+        
+        this.eventDetails = []
+        await this.fetchEvents(this.atBat.id)
+        for (const event of this.events) {
+          const id = event.id
+          await this.fetchRuns(id)
+          await this.fetchSteals(id)
+          await this.fetchRunOuts(id)
+          await this.fetchSpecial(id)
+          await this.fetchBatteryError(id)
+          await this.fetchError(id)
+          this.eventDetails.push({
+            event: event,
+            steals: this.steals,
+            runOuts: this.runOuts,
+            runs: this.runs,
+            batteryError: this.batteryError,
+            error: this.error,
+            special: this.special
+          })
+        }
 
       } else {
         // バッター情報
@@ -1226,6 +1263,7 @@ export default {
         })[0].orderDetails.slice(-1)[0].playerId
         this.nowPitcher = this.players.filter((player) => player.id === nowPitcherId)[0]
       }
+
       this.atBat.batterId = this.nowBatter.id
       this.atBat.pitcherId = this.nowPitcher.id
       this.atBat.outCount = nowAtBat === null ? 0 : nowAtBat.outCount
@@ -2788,6 +2826,84 @@ export default {
         .catch((error) => {
           console.log(error)
         })
+      }
+    },
+    async fetchSteals(eventId) {
+      try {
+        this.steals = await StealApi.getStealsByEventId(eventId)
+      } catch (error) {
+        if (error.status === 404) {
+          this.steals = []
+        } else {
+          console.log(error)
+        }
+      }
+    },
+    async fetchSpecial(eventId) {
+      try {
+        this.special = await SpecialApi.getSpecialByEventId(eventId)
+      } catch (error) {
+        if (error.status === 404) {
+          this.special = {}
+        } else {
+          console.log(error)
+        }
+      }
+    },
+    async fetchBatteryError(eventId) {
+      try {
+        const res= await BatteryErrorApi.getBatteryErrorByEventId(eventId)
+        this.batteryError = res
+      } catch (error) {
+        if (error.status === 404) {
+          this.batteryError = {}
+        } else {
+          console.log(error)
+        }
+      }
+    },
+    async fetchError(eventId) {
+      try {
+        this.error = await ErrorApi.getErrorByEventId(eventId)
+      } catch (error) {
+        if (error.status === 404) {
+          this.error = {}
+        } else {
+          console.log(error)
+        }
+      }
+    },
+    async fetchRuns(eventId) {
+      try {
+       this.runs = await RunApi.getRunsByEventId(eventId)
+      } catch (error) {
+        if (error.status === 404) {
+          this.runs = []
+        } else {
+          console.log(error)
+        }
+      }
+    },
+    async fetchRunOuts(eventId) {
+      try{
+        this.runOuts = await RunOutApi.getRunOutsByEventId(eventId)
+      } catch (error) {
+        if (error.status === 404) {
+          this.runOuts = []
+        } else {
+          console.log(error)
+        }
+      }
+    },
+    async fetchEvents(atBatId) {
+      try {
+        this.events = await EventApi.getEventsByAtBatId(atBatId)
+      } catch (error) {
+        if (error.status === 404) {
+          this.events = []
+        } else {
+          console.log(error)
+        }
       }
     }
   }

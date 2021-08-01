@@ -7,5 +7,9 @@ export default {
       teamId: special.teamId,
       eventId: special.eventId
     })
+  },
+
+  getSpecialByEventId(eventId) {
+    return axios.$get(`games/specials/${eventId}`)
   }
 }

@@ -11,5 +11,9 @@ export default {
       catcherId: steal.catcherId,
       successFlg: steal.successFlg
     })
+  },
+
+  getStealsByEventId(eventId) {
+    return axios.$get(`games/steals/${eventId}`)
   }
 }

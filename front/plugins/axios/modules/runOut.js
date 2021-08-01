@@ -8,5 +8,9 @@ export default {
       teamId: runOut.teamId,
       eventId: runOut.eventId
     })
+  },
+
+  getRunOutsByEventId(eventId) {
+    return axios.$get(`games/run-outs/${eventId}`)
   }
 }

@@ -8,5 +8,9 @@ export default {
       playerId: error.playerId,
       eventId: error.eventId
     })
+  },
+
+  getErrorByEventId(eventId) {
+    return axios.$get(`games/errors/${eventId}`)
   }
 }

@@ -15,5 +15,9 @@ export default {
       earndFlg: run.earnedFlg,
       rbiFlg: run.rbiFlg
     })
+  },
+
+  getRunsByEventId(eventId) {
+    return axios.$get(`games/runs/${eventId}`)
   }
 }
