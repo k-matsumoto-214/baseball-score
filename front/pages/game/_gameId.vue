@@ -319,10 +319,25 @@
               </v-btn>
             </v-row>
             <event-info
-              v-if="eventDetails.length !== 0"
               :eventDetails="eventDetails"
               :players="players"
+              :startRunners="startRunners"
+              :startOutCount="startOutCount"
             />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
             <v-dialog
@@ -1169,6 +1184,8 @@ export default {
       nowBatter: null,
       nowPitcher: null,
       wpFlg: false,
+      startRunners: [],
+      startOutCount: null,
       errorMessage: '',
       directionErrorMessage: '',
       runnerErrorMessage: '',
@@ -1216,8 +1233,24 @@ export default {
       let nowAtBat = null
       let nowBatterId = null
       let nowPitcherId = null
+      let beforeAtBat = null
+      let beforeResult = null
       if (this.isStarted) {
         nowAtBat = this.atBats.slice(-1)[0]
+        beforeAtBat = this.atBats.length > 1 ? this.atBats[this.atBats.length - 2] : null
+        if (beforeAtBat !== null) {
+          try {
+            const beforeResults = await EventApi.getEventsByAtBatId(beforeAtBat.id)
+            beforeResult = beforeResults.slice(-1)[0]
+          } catch (error) {
+            if (error.status === 404) {
+              beforeResult = null
+            } else {
+              console.log(error)
+            }
+          }
+        }
+
         // バッター情報
         nowBatterId = nowAtBat.batterId
         this.nowBatter = this.players.filter((player) => player.id === nowBatterId)[0]
@@ -1233,13 +1266,23 @@ export default {
         this.eventDetails = []
         await this.fetchEvents(this.atBat.id)
         for (const event of this.events) {
+          this.eventsClere()
           const id = event.id
+          if (event.eventType === 0) {
+            await this.fetchSteals(id)
+          }
+          if (event.eventType === 1) {
+            await this.fetchBatteryError(id)
+          }
+          if (event.eventType === 2) {
+            await this.fetchError(id)
+          }
+          if (event.eventType === 3) {
+            await this.fetchSpecial(id)
+          }
           await this.fetchRuns(id)
-          await this.fetchSteals(id)
           await this.fetchRunOuts(id)
-          await this.fetchSpecial(id)
-          await this.fetchBatteryError(id)
-          await this.fetchError(id)
+          
           this.eventDetails.push({
             event: event,
             steals: this.steals,
@@ -1276,6 +1319,15 @@ export default {
       this.atBat.secondRunnerId = nowAtBat === null ? null : nowAtBat.secondRunnerId
       this.atBat.thirdRunnerId = nowAtBat === null ? null : nowAtBat.thirdRunnerId
       this.setRunners()
+
+      // 打席開始時の走者情報の取得
+      if ((nowAtBat !== null && beforeAtBat !== null) && (nowAtBat.topFlg === beforeAtBat.topFlg)) {
+        this.startRunners = [beforeResult.resultFirstRunnerId, beforeResult.resultSecondRunnerId, beforeResult.resultThirdRunnerId]
+        this.startOutCount = beforeResult.resultOutCount
+      } else {
+        this.startRunners = []
+        this.startOutCount = 0
+      }
 
       // 試合情報
       this.atBat.gameId = this.game.id
@@ -1694,65 +1746,66 @@ export default {
       } else {
         this.isOpenRbiAndEernedModal = false
       }
+
+
       // 打席結果イベントの登録処理：　親イベント
-      if (this.outRunners.length !== 0 || this.homeRunners.length !== 0) {
-        let newEvent = {
-          id: null,
-          gameId: this.game.id,
-          teamId: this.game.teamId,
-          inning: this.atBat.inning,
-          atBatId: this.atBat.id,
-          resultFirstRunnerId: this.firstRunners.length !== 0 ? this.firstRunners[0].id : null,
-          resultSecondRunnerId: this.secondRunners.length !== 0 ? this.secondRunners[0].id : null,
-          resultThirdRunnerId: this.thirdRunners.length !== 0 ? this.thirdRunners[0].id : null,
-          resultOutCount: this.atBat.outCount + this.outRunners.length,
-          timing: 1 // 打撃時イベント
-        }
-        EventApi.registerEvent(newEvent)
-        .then((res) => {
-          
-          // 打席結果イベントの登録処理：　得点
-          this.homeRunners.filter((homeRunner) => {
-            let newRun = {
-              id: null,
-              teamId: this.game.teamId,
-              gameId: this.game.id,
-              eventId: res.id,
-              atBatId: this.atBat.id,
-              batterId: this.atBat.batterId,
-              pitcherId: this.atBat.pitcherId,
-              runnerId: homeRunner.id,
-              inning: this.atBat.inning,
-              earnedFlg: homeRunner.earnedFlg,
-              rbiFlg: homeRunner.rbiFlg
-            }
-            RunApi.registerRun(newRun)
-            .catch((error) => {
-              console.log(error)
-            })
-          })
-
-          // 打席結果イベントの登録処理：　走塁死
-          this.outRunners.filter((outRunner) => {
-            let newRunOut = {
-              id: null,
-              playerId: outRunner.id,
-              teamId: this.game.teamId,
-              eventId: res.id
-            }
-            RunOutApi.registerRunOut(newRunOut)
-            .catch((error) => {
-              console.log(error)
-            })
-          })
-
-        })
-        .catch((error) => {
-          console.log(error)
-        })
+      let newEvent = {
+        id: null,
+        gameId: this.game.id,
+        teamId: this.game.teamId,
+        inning: this.atBat.inning,
+        atBatId: this.atBat.id,
+        resultFirstRunnerId: this.firstRunners.length !== 0 ? this.firstRunners[0].id : null,
+        resultSecondRunnerId: this.secondRunners.length !== 0 ? this.secondRunners[0].id : null,
+        resultThirdRunnerId: this.thirdRunners.length !== 0 ? this.thirdRunners[0].id : null,
+        resultOutCount: this.atBat.outCount + this.outRunners.length,
+        timing: 1 // 打撃時イベント
       }
+
+      EventApi.registerEvent(newEvent)
+      .then((res) => {
+        
+        // 打席結果イベントの登録処理：　得点
+        this.homeRunners.filter((homeRunner) => {
+          let newRun = {
+            id: null,
+            teamId: this.game.teamId,
+            gameId: this.game.id,
+            eventId: res.id,
+            atBatId: this.atBat.id,
+            batterId: this.atBat.batterId,
+            pitcherId: this.atBat.pitcherId,
+            runnerId: homeRunner.id,
+            inning: this.atBat.inning,
+            earnedFlg: homeRunner.earnedFlg,
+            rbiFlg: homeRunner.rbiFlg
+          }
+          RunApi.registerRun(newRun)
+          .catch((error) => {
+            console.log(error)
+          })
+        })
+
+        // 打席結果イベントの登録処理：　走塁死
+        this.outRunners.filter((outRunner) => {
+          let newRunOut = {
+            id: null,
+            playerId: outRunner.id,
+            teamId: this.game.teamId,
+            eventId: res.id
+          }
+          RunOutApi.registerRunOut(newRunOut)
+          .catch((error) => {
+            console.log(error)
+          })
+        })
+
+      })
+      .catch((error) => {
+        console.log(error)
+      })
       
-      // 打席結果の登録処理
+      // 次打者の登録処理
       this.atBat.completeFlg = true
       AtBatApi.updateAtBat(this.atBat)
       .then(() => {
@@ -2208,11 +2261,13 @@ export default {
         eventType: 2
       }
 
-      const errorFieldNumber = this.atBat.direction 
+      const errorFieldNumber = this.atBat.direction
+      const homeRunners = this.homeRunners
+      const outRunners = this.outRunners
       EventApi.registerEvent(newEvent)
       .then((res) => {
         // イベントの登録処理：得点
-        this.homeRunners.filter((homeRunner) => {
+        homeRunners.filter((homeRunner) => {
           let newRun = {
             id: null,
             teamId: this.game.teamId,
@@ -2233,7 +2288,7 @@ export default {
         })
 
         // イベントの登録処理：走塁死
-        this.outRunners.filter((outRunner) => {
+        outRunners.filter((outRunner) => {
           let newRunOut = {
             id: null,
             playerId: outRunner.id,
@@ -2437,11 +2492,13 @@ export default {
         comment: this.event.comment,
         eventType: 1
       }
+      const homeRunners = this.homeRunners
+      const outRunners = this.outRunners
       EventApi.registerEvent(newEvent)
       .then((res) => {
 
         // イベントの登録処理：得点
-        this.homeRunners.filter((homeRunner) => {
+        homeRunners.filter((homeRunner) => {
           let newRun = {
             id: null,
             teamId: this.game.teamId,
@@ -2462,7 +2519,7 @@ export default {
         })
 
         // イベントの登録処理：走塁死
-        this.outRunners.filter((outRunner) => {
+        outRunners.filter((outRunner) => {
           let newRunOut = {
             id: null,
             playerId: outRunner.id,
@@ -2671,11 +2728,13 @@ export default {
         comment: this.event.comment,
         eventType: 3
       }
+      const homeRunners = this.homeRunners
+      const outRunners = this.outRunners
       EventApi.registerEvent(newEvent)
       .then((res) => {
 
         // イベントの登録処理：得点
-        this.homeRunners.filter((homeRunner) => {
+        homeRunners.filter((homeRunner) => {
           let newRun = {
             id: null,
             teamId: this.game.teamId,
@@ -2696,7 +2755,7 @@ export default {
         })
 
         // イベントの登録処理：走塁死
-        this.outRunners.filter((outRunner) => {
+        outRunners.filter((outRunner) => {
           let newRunOut = {
             id: null,
             playerId: outRunner.id,
@@ -2905,6 +2964,14 @@ export default {
           console.log(error)
         }
       }
+    },
+    eventsClere() {
+      this.runs = []
+      this.runOuts = []
+      this.special = {}
+      this.betteryError = {}
+      this.error = {}
+      this.steals = []
     }
   }
 }
