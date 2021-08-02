@@ -5,7 +5,7 @@
       max-width="640"
       flat
     >
-      <v-card-text>
+      <v-card-text class="pb-0">
         Player
       </v-card-text>
       <v-list three-line>
@@ -15,7 +15,7 @@
             :to="`/player/${player.id}`"
           >
             <v-list-item-avatar>
-              <v-img :src="player.image ? player.image : 'noimage.jpg'"></v-img>
+              <v-img :src="player.image ? player.image : 'noimage.png'"></v-img>
             </v-list-item-avatar>
             <v-list-item-content>
               <v-list-item-title>{{ player.name }}</v-list-item-title>
