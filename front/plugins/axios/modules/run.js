@@ -19,5 +19,9 @@ export default {
 
   getRunsByEventId(eventId) {
     return axios.$get(`games/runs/${eventId}`)
+  },
+
+  getRunsByGameId(gameId) {
+    return axios.$get(`games/result/runs/${gameId}`)
   }
 }

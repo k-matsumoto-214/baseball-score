@@ -9,13 +9,14 @@
 
 <script>
 import Header from "@/components/header.vue";
+import TeamApi from '@/plugins/axios/modules/team'
 export default {
   components: {
     Header
   },
-  middleware({ store, redirect }) {
+	middleware({ store, redirect }) {
     if(!store.$auth.loggedIn) {
-      redirect('/login');
+      redirect('/login')
     }
   }
 }

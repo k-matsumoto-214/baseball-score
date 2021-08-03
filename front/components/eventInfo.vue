@@ -119,8 +119,8 @@
         </div>
       </v-expansion-panel-header>
       <v-expansion-panel-content>
-        <div v-if="startRunners.length === 0">
-          <v-list-item-subtitle class="text-body text-center">先頭打者</v-list-item-subtitle>
+        <div v-if="startRunners[0] === null && startRunners[1] === null && startRunners[2] === null">
+          <v-list-item-subtitle class="text-body text-center">走者なし</v-list-item-subtitle>
         </div>
         <div v-if="startRunners.length !== 0">
           <div v-if="startRunners[0] !== null" class="d-flex px-3">
@@ -213,6 +213,11 @@ export default {
       if (eventDetail.event.resultThirdRunnerId !== null) {
         runner = runner === '' ? '3' : runner + ', 3'
       }
+      if (eventDetail.event.resultFirstRunnerId !== null &&
+          eventDetail.event.resultSecondRunnerId !== null &&
+          eventDetail.event.resultThirdRunnerId !== null) {
+            runner = '満'
+      }
       if (runner !== '') {
         runner += ' 塁'
       } else {
@@ -236,6 +241,9 @@ export default {
       }
       if (startRunners[2] !== null) {
         runner = runner === '' ? '3' : runner + ', 3'
+      }
+      if (startRunners[0] !== null && startRunners[1] !== null && startRunners[2] !== null) {
+        runner = '満'
       }
       if (runner !== '') {
         runner += ' 塁'

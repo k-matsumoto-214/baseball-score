@@ -28,7 +28,8 @@ export default {
       resultFlg: game.resultFlg,
       lineupingStatus: game.lineupingStatus,
       topLineup: game.topLineup,
-      bottomLineup: game.bottomLineup
+      bottomLineup: game.bottomLineup,
+      inning: game.inning
     })
   },
 

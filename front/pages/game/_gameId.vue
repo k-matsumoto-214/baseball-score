@@ -152,6 +152,26 @@
             </v-col>
           </v-row>
           <div v-if="nowBatter !== null">
+            <v-row
+              v-if="beforeAtBat !== null"
+              justify="space-between"
+              class="mt-4 px-1"
+            >
+              <p 
+                class="text-caption pb-0 mb-0"
+                style="color: #F06292;"
+                @click="isOpenDeleteAtBatModal = true"
+              >
+                前の打者へ
+              </p>
+              <p 
+                class="text-caption pb-0 mb-0"
+                style="color: #64B5F6;"
+                @click="isOpenEndModal = true"
+              >
+                試合を終了する
+              </p>
+            </v-row>
             <inning-info :atBat="atBat" />
             <v-row justify="space-between" class="mt-3">
               <v-col cols="5">
@@ -324,6 +344,7 @@
               :startRunners="startRunners"
               :startOutCount="startOutCount"
             />
+            
 
 
 
@@ -1066,6 +1087,24 @@
                 </v-container>
               </v-card>
             </v-dialog>
+            <v-dialog v-if="!game.resultFlg" v-model="isOpenEndModal" max-width="640">
+              <v-card class="px-6 py-8">
+                <v-card-text>VS 「{{ game.opponentTeam  }}」を終了します。一度終了した試合は編集できません。<br>本当に終了しますか？</v-card-text>
+                <v-row justify="center">
+                  <v-btn color="pink lighten-2" @click="endGame()" class="mr-4 mt-4 white--text">終了</v-btn>
+                  <v-btn @click="isOpenEndModal = false" class="mt-4">やめる</v-btn>
+                </v-row>
+              </v-card>
+            </v-dialog>
+            <v-dialog v-if="!game.resultFlg" v-model="isOpenDeleteAtBatModal" max-width="640">
+              <v-card class="px-6 py-8">
+                <v-card-text>ひとつ前の打者に戻ります。<br>入力していた盗塁、得点、失策等の情報はリセットされます<br>本当に戻りますか？</v-card-text>
+                <v-row justify="center">
+                  <v-btn color="pink lighten-2" @click="deleteAtBat()" class="mr-4 mt-4 white--text">前の打者へ</v-btn>
+                  <v-btn @click="isOpenDeleteAtBatModal = false" class="mt-4">やめる</v-btn>
+                </v-row>
+              </v-card>
+            </v-dialog>
           </div>
         </div>
       </div>
@@ -1162,6 +1201,7 @@ export default {
         lineupNumber: null,
         topFlg: false
       },
+      beforeAtBat: null,
       events: [],
       event: {
         comment: null
@@ -1201,7 +1241,9 @@ export default {
       isOpenBatteryErrorModal: false,
       isOpenEernedForBatteryErrorModal: false,
       isOpenSpecialModal: false,
-      isOpenEernedForSpecialModal: false
+      isOpenEernedForSpecialModal: false,
+      isOpenEndModal: false,
+      isOpenDeleteAtBatModal: false
     }
   },
   created() {
@@ -1238,6 +1280,7 @@ export default {
       if (this.isStarted) {
         nowAtBat = this.atBats.slice(-1)[0]
         beforeAtBat = this.atBats.length > 1 ? this.atBats[this.atBats.length - 2] : null
+        this.beforeAtBat = beforeAtBat
         if (beforeAtBat !== null) {
           try {
             const beforeResults = await EventApi.getEventsByAtBatId(beforeAtBat.id)
@@ -1325,7 +1368,7 @@ export default {
         this.startRunners = [beforeResult.resultFirstRunnerId, beforeResult.resultSecondRunnerId, beforeResult.resultThirdRunnerId]
         this.startOutCount = beforeResult.resultOutCount
       } else {
-        this.startRunners = []
+        this.startRunners = [null, null, null]
         this.startOutCount = 0
       }
 
@@ -1778,7 +1821,8 @@ export default {
             runnerId: homeRunner.id,
             inning: this.atBat.inning,
             earnedFlg: homeRunner.earnedFlg,
-            rbiFlg: homeRunner.rbiFlg
+            rbiFlg: homeRunner.rbiFlg,
+            topFlg: this.atBat.topFlg
           }
           RunApi.registerRun(newRun)
           .catch((error) => {
@@ -2078,7 +2122,8 @@ export default {
               runnerId: resultHomeRunner.id,
               inning: this.atBat.inning,
               earnedFlg: resultHomeRunner.earnedFlg,
-              rbiFlg: false
+              rbiFlg: false,
+              topFlg: this.atBat.topFlg
             }
             RunApi.registerRun(newRun)
             .catch((error) => {
@@ -2279,7 +2324,8 @@ export default {
             runnerId: homeRunner.id,
             inning: this.atBat.inning,
             earnedFlg: homeRunner.earnedFlg,
-            rbiFlg: homeRunner.rbiFlg
+            rbiFlg: homeRunner.rbiFlg,
+            topFlg: this.atBat.topFlg
           }
           RunApi.registerRun(newRun)
           .catch((error) => {
@@ -2510,7 +2556,8 @@ export default {
             runnerId: homeRunner.id,
             inning: this.atBat.inning,
             earnedFlg: homeRunner.earnedFlg,
-            rbiFlg: homeRunner.rbiFlg
+            rbiFlg: homeRunner.rbiFlg,
+            topFlg: this.atBat.topFlg
           }
           RunApi.registerRun(newRun)
           .catch((error) => {
@@ -2746,7 +2793,8 @@ export default {
             runnerId: homeRunner.id,
             inning: this.atBat.inning,
             earnedFlg: homeRunner.earnedFlg,
-            rbiFlg: homeRunner.rbiFlg
+            rbiFlg: homeRunner.rbiFlg,
+            topFlg: this.atBat.topFlg
           }
           RunApi.registerRun(newRun)
           .catch((error) => {
@@ -2972,6 +3020,48 @@ export default {
       this.betteryError = {}
       this.error = {}
       this.steals = []
+    },
+    async endGame() {
+      try {
+        const score = await RunApi.getRunsByGameId(this.game.id)
+        this.game.topScore = score.topScore
+        this.game.bottomScore = score.bottomScore
+        if (this.game.topFlg) {
+          if (score.topScore > score.bottomScore) {
+            this.game.result = 0
+          } else if (score.topScore < score.bottomScore) {
+            this.game.result = 1
+          } else {
+            this.game.result = 2
+          }
+        } else {
+          if (score.topScore > score.bottomScore) {
+            this.game.result = 1
+          } else if (score.topScore < score.bottomScore) {
+            this.game.result = 0
+          } else {
+            this.game.result = 2
+          }
+        }
+        this.game.resultFlg = true
+        this.game.inning = this.atBat.inning
+        await GameApi.updateGame(this.game)
+      } catch (error) {
+        console.log(error)
+        this.isOpenEndModal = false
+        // location.reload();
+      }
+      this.isOpenEndModal = false
+      // location.reload();
+    },
+    async deleteAtBat() {
+      try {
+        await AtBatApi.deleteAtBat(this.beforeAtBat, this.atBat.id)
+      } catch(error) {
+        console.log(error)
+      }
+      this.isOpenDeleteAtBatModal = false
+      location.reload();
     }
   }
 }

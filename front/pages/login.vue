@@ -124,13 +124,12 @@ export default {
         return
       }
       try {
-        const response = await this.$auth.loginWith('local', { 
+        await this.$auth.loginWith('local', { 
           data: {
             accountId: this.accountId,
             password: this.password
           }
         })
-        console.log(response)
       } catch(error) {
         console.log(error)
         this.isError = true
