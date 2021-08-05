@@ -43,5 +43,9 @@ export default {
 
   deleteGame(id) {
     return axios.$delte(`games/${id}`)
+  },
+
+  getScore(id) {
+    return axios.$get(`games/scores/${id}`)
   }
 }

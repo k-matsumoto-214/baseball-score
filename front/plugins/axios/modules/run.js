@@ -13,7 +13,8 @@ export default {
       runnerId: run.runnerId,
       inning: run.inning,
       earndFlg: run.earnedFlg,
-      rbiFlg: run.rbiFlg
+      rbiFlg: run.rbiFlg,
+      topFlg: run.topFlg
     })
   },
 

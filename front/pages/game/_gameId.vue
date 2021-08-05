@@ -1,11 +1,9 @@
 <template>
-  <v-container>
     <v-card
       class="mx-auto fill-width pt-7"
       max-width="640"
       flat
     >
-      <v-card-subtitle></v-card-subtitle>
       <div v-if="!game.resultFlg">
         <div v-if="game.lineupingStatus === 0">
           <v-card-text>
@@ -62,10 +60,14 @@
           </v-row>
         </div>
         <div v-else-if="game.lineupingStatus === 2">
-          <v-row>
-            <v-col cols="2" style="padding: 0px;">
-              <v-simple-table class="grey lighten-3">
-                <template v-slot:default>
+          <v-tabs grow dark style="height: 40px;" class="mt-3">
+            <v-tab>結果入力</v-tab>
+            <v-tab>試合経過</v-tab>
+            <v-tab>選手成績</v-tab>
+          </v-tabs>
+          <v-row v-if="score !== null" class="mt-2" style="width: 100%; margin: auto 0;">
+            <v-col style="padding: 0 0px; width: 15%;">
+              <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;">
                   <thead>
                     <tr>
                       <th class="text-left">
@@ -85,267 +87,266 @@
                       </td>
                     </tr>
                   </tbody>
-                </template>
               </v-simple-table>
             </v-col>
-            <v-col cols="9" style="padding: 0 1px;">
-              <v-simple-table class="grey lighten-3">
-                <template v-slot:default>
-                  <thead>
-                    <tr class="text-center">
-                      <th class="inningHeader  ">1</th>
-                      <th class="inningHeader  ">2</th>
-                      <th class="inningHeader  ">3</th>
-                      <th class="inningHeader  ">4</th>
-                      <th class="inningHeader  ">5</th>
-                      <th class="inningHeader  ">6</th>
-                      <th class="inningHeader  ">7</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                  <tr class="text-center">
-                    <td class="inning  " data-score="0">0</td>
-                    <td class="inning  " data-score="0">0</td>
-                    <td class="inning  " data-score="0">0</td>
-                    <td class="inning  " data-score="1">1</td>
-                    <td class="inning  " data-score="0">0</td>
-                    <td class="inning  " data-score="0">0</td>
-                    <td class="inning  " data-score="0">0</td>
+            <v-col style="padding: 0 0px; width: 75%;">
+              <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;">
+                <thead>
+                  <tr>
+                    <th
+                      v-for="topScore, idx in score.runs.topScores"
+                      :key="idx"
+                      class="text-center"
+                    >
+                      {{ idx + 1 }}
+                    </th>
                   </tr>
-                  <tr class="home">
-                    <td class="inning  " data-score="0">0</td>
-                    <td class="inning  " data-score="0">0</td>
-                    <td class="inning  " data-score="0">0</td>
-                    <td class="inning  " data-score="0">0</td>
-                    <td class="inning  " data-score="0">0</td>
-                    <td class="inning  " data-score="1">1</td>
-                    <td class="inning  " data-score="0">0</td>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td
+                      v-for="topScore, idx in score.runs.topScores"
+                      :key="idx"
+                      class="text-center"
+                      v-bind:class="{ active: atBat.inning === (idx + 1) && atBat.topFlg }"
+                    >
+                      {{ score.runs.topScores[idx] !== null ? score.runs.topScores[idx].score : 0 }}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      v-for="topScore, idx in score.runs.topScores"
+                      :key="idx"
+                      class="text-center"
+                      v-bind:class="{ active: atBat.inning === (idx + 1) && !atBat.topFlg }"
+                    >
+                      {{ score.runs.bottomScores[idx] !== null ? score.runs.bottomScores[idx].score : 0 }}
+                    </td>
                   </tr>
                 </tbody>
-                </template>
               </v-simple-table>
             </v-col>
-            <v-col cols="1" style="padding: 0px;">
-              <v-simple-table class="grey lighten-3">
-                <template v-slot:default>
+            <v-col style="padding: 0 0px; width: 10%;">
+              <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;">
                   <thead>
                     <tr class="text-center">
-                      <th class="inningHeader">R</th>
-                      <th class="inningHeader">H</th>
-                      <th class="inningHeader">E</th>
+                      <th class="text-center">R</th>
+                      <th>H</th>
+                      <th>E</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr class="text-center">
-                      <td class="inning  " data-score="0">0</td>
-                      <td class="inning  " data-score="0">0</td>
-                      <td class="inning  " data-score="0">0</td>
+                      <td>{{ score.runs.topScore }}</td>
+                      <td>{{ score.topHit }}</td>
+                      <td>{{ score.topError }}</td>
                     </tr>
-                    <tr class="home">
-                      <td class="inning  " data-score="0">0</td>
-                      <td class="inning  " data-score="0">0</td>
-                      <td class="inning  " data-score="0">0</td>
+                    <tr class="text-center">
+                      <td>{{ score.runs.bottomScore }}</td>
+                      <td>{{ score.bottomHit }}</td>
+                      <td>{{ score.bottomError }}</td>
                     </tr>
                   </tbody>
-                </template>
               </v-simple-table>
             </v-col>
           </v-row>
           <div v-if="nowBatter !== null">
-            <v-row
-              justify="space-between"
-              class="mt-4 px-1"
-              style="height: 20px"
-            >
-              <p
-                v-if="beforeAtBat !== null"
-                class="text-caption pb-0 mb-0"
-                style="color: #F06292;"
-                @click="isOpenDeleteAtBatModal = true"
+            <v-container>
+              <inning-info :atBat="atBat" />
+              <v-row
+                justify="space-between"
+                class="mt-3 px-2"
+                style="height: 20px"
               >
-                前の打者へ
-              </p>
-              <p 
-                v-if="beforeAtBat !== null"
-                class="text-caption pb-0 mb-0"
-                style="color: #64B5F6;"
-                @click="isOpenEndModal = true"
-              >
-                試合を終了する
-              </p>
-            </v-row>
-            <inning-info :atBat="atBat" />
-            <v-row justify="space-between" class="mt-3">
-              <v-col cols="5">
-                <pitcher-info
-                  :nowPitcher="nowPitcher"
-                />
-              </v-col>
-              <v-col cols="2" style="margin: auto 0; font-size: 30px; color: #F44336;">
-                <p class="text-center">VS</p>
-              </v-col>
-              <v-col cols="5">
-                <batter-info 
-                  :nowBatter="nowBatter"
-                />
-              </v-col>
-            </v-row>
-            <v-row justify="center" class="my-5">
-              <v-menu>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                    color="pink lighten-1"
-                    v-bind="attrs"
-                    v-on="on"
-                    class="white--text mr-5"
-                  >
-                    <span>安打</span>
-                  </v-btn>
-                </template>
-                <v-list>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(0)">ヒット</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(1)">二塁打</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(2)">三塁打</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(3)">本塁打</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-              <v-menu>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                    color="light-blue lighten-1"
-                    v-bind="attrs"
-                    v-on="on"
-                    class="white--text mr-5"
-                  >
-                  　<span>出塁</span>
-                  </v-btn>
-                </template>
-                <v-list>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(4)">四球</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(5)">死球</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(6)">エラー</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(10)">振逃</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(13)">特殊</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-              <v-menu>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                    v-bind:disabled="atBat.outCount === 2 ||
-                      (firstRunner === null && secondRunner === null && thirdRunner === null)"
-                    color="amber lighten-1"
-                    v-bind="attrs"
-                    v-on="on"
-                    class="white--text mr-5"
-                  >
-                  　<span>犠打</span>
-                  </v-btn>
-                </template>
-                <v-list>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(7)">犠打</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item v-show="thirdRunner !== null">
-                    <v-list-item-title @click="openResultModal(8)">
-                      犠飛
-                    </v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-              <v-menu>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                    color="blue-grey lighten-1"
-                    dark
-                    v-bind="attrs"
-                    v-on="on"
-                    class="white--text"
-                  >
-                    <span>凡打</span>
-                  </v-btn>
-                </template>
-                <v-list>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(11)">ゴロ</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(12)">フライ</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(9)">三振</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openResultModal(14)">特殊</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </v-row>
-            <v-row justify="center" class="my-5">
-              <v-btn
-                v-bind:disabled="firstRunner === null && secondRunner === null && thirdRunner === null"
-                color="blue darken-4"
-                class="white--text mr-5"
-                @click="openStealModal()"
-              >
-                <span>盗塁</span>
-              </v-btn>
-              <v-menu>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                    v-bind:disabled="firstRunner === null && secondRunner === null && thirdRunner === null"
-                    color="teal darken-3"
-                    v-bind="attrs"
-                    v-on="on"
-                    class="white--text mr-5"
-                  >
-                    <span>失策</span>
-                  </v-btn>
-                </template>
-                <v-list>
-                  <v-list-item>
-                    <v-list-item-title @click="openBatteryErrorModal(false)">捕逸</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openBatteryErrorModal(true)">暴投</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item>
-                    <v-list-item-title @click="openErrorModal()">エラー</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-              <v-btn
-                v-bind:disabled="firstRunner === null && secondRunner === null && thirdRunner === null"
-                color="purple lighten-2"
-                class="white--text"
-                @click="openSpecialModal()"
-              >
-                <span>特殊</span>
-              </v-btn>
-            </v-row>
-            <event-info
-              :eventDetails="eventDetails"
-              :players="players"
-              :startRunners="startRunners"
-              :startOutCount="startOutCount"
-            />
+                <p
+                  v-if="beforeAtBat !== null"
+                  class="text-caption pb-0 mb-0"
+                  style="color: #F06292;"
+                  @click="isOpenDeleteAtBatModal = true"
+                >
+                  前の打者へ
+                </p>
+                <p 
+                  v-if="beforeAtBat !== null"
+                  class="text-caption pb-0 mb-0"
+                  style="color: #64B5F6;"
+                  @click="isOpenEndModal = true"
+                >
+                  試合を終了する
+                </p>
+              </v-row>
+              <v-row justify="space-between" class="mt-3">
+                <v-col cols="5">
+                  <pitcher-info
+                    :nowPitcher="nowPitcher"
+                  />
+                </v-col>
+                <v-col cols="2" style="margin: auto 0; font-size: 30px; color: #F44336;">
+                  <p class="text-center">VS</p>
+                </v-col>
+                <v-col cols="5">
+                  <batter-info 
+                    :nowBatter="nowBatter"
+                  />
+                </v-col>
+              </v-row>
+              <v-row justify="center" class="my-5">
+                <v-menu>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="pink lighten-1"
+                      v-bind="attrs"
+                      v-on="on"
+                      class="white--text mr-5"
+                    >
+                      <span>安打</span>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(0)">ヒット</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(1)">二塁打</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(2)">三塁打</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(3)">本塁打</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+                <v-menu>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="light-blue lighten-1"
+                      v-bind="attrs"
+                      v-on="on"
+                      class="white--text mr-5"
+                    >
+                    　<span>出塁</span>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(4)">四球</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(5)">死球</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(6)">エラー</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(10)">振逃</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(13)">特殊</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+                <v-menu>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      v-bind:disabled="atBat.outCount === 2 ||
+                        (firstRunner === null && secondRunner === null && thirdRunner === null)"
+                      color="amber lighten-1"
+                      v-bind="attrs"
+                      v-on="on"
+                      class="white--text mr-5"
+                    >
+                    　<span>犠打</span>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(7)">犠打</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-show="thirdRunner !== null">
+                      <v-list-item-title @click="openResultModal(8)">
+                        犠飛
+                      </v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+                <v-menu>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="blue-grey lighten-1"
+                      dark
+                      v-bind="attrs"
+                      v-on="on"
+                      class="white--text"
+                    >
+                      <span>凡打</span>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(11)">ゴロ</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(12)">フライ</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(9)">三振</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openResultModal(14)">特殊</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </v-row>
+              <v-row justify="center" class="my-5">
+                <v-btn
+                  v-bind:disabled="firstRunner === null && secondRunner === null && thirdRunner === null"
+                  color="blue darken-4"
+                  class="white--text mr-5"
+                  @click="openStealModal()"
+                >
+                  <span>盗塁</span>
+                </v-btn>
+                <v-menu>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      v-bind:disabled="firstRunner === null && secondRunner === null && thirdRunner === null"
+                      color="teal darken-3"
+                      v-bind="attrs"
+                      v-on="on"
+                      class="white--text mr-5"
+                    >
+                      <span>失策</span>
+                    </v-btn>
+                  </template>
+                  <v-list>
+                    <v-list-item>
+                      <v-list-item-title @click="openBatteryErrorModal(false)">捕逸</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openBatteryErrorModal(true)">暴投</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item>
+                      <v-list-item-title @click="openErrorModal()">エラー</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+                <v-btn
+                  v-bind:disabled="firstRunner === null && secondRunner === null && thirdRunner === null"
+                  color="purple lighten-2"
+                  class="white--text"
+                  @click="openSpecialModal()"
+                >
+                  <span>特殊</span>
+                </v-btn>
+              </v-row>
+              <event-info
+                :eventDetails="eventDetails"
+                :players="players"
+                :startRunners="startRunners"
+                :startOutCount="startOutCount"
+              />
+            </v-container>
             
 
 
@@ -1175,7 +1176,6 @@
         </v-card>
       </v-dialog>
     </v-card>
-  </v-container>
 </template>
 
 <script>
@@ -1321,7 +1321,8 @@ export default {
       isOpenEernedForSpecialModal: false,
       isOpenEndModal: false,
       isOpenDeleteAtBatModal: false,
-      isOpenResponsiblePitcherModal: false
+      isOpenResponsiblePitcherModal: false,
+      score: null
     }
   },
   created() {
@@ -1463,6 +1464,10 @@ export default {
           console.log(error)
         })
       }
+
+      // スコア情報の取得
+      this.score = await this.fetchScore()
+      console.log(this.score)
     }
   },
   computed: {
@@ -3211,7 +3216,21 @@ export default {
       }
       this.isOpenDeleteAtBatModal = false
       location.reload();
+    },
+    async fetchScore() {
+      try {
+        return await GameApi.getScore(this.game.id) 
+      } catch(error) {
+        console.log(error)
+      }
     }
   }
 }
 </script>
+
+<style scoped>
+.active {
+  background-color: #F9A825;
+  border-radius: 5px;
+}
+</style>
