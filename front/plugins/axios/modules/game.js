@@ -29,7 +29,11 @@ export default {
       lineupingStatus: game.lineupingStatus,
       topLineup: game.topLineup,
       bottomLineup: game.bottomLineup,
-      inning: game.inning
+      inning: game.inning,
+      winningPitcher: game.winningPitcher !== null ? game.winningPitcher.id : null,
+      losingPitcher: game.losingPitcher !== null ? game.losingPitcher.id : null,
+      savePitcher: game.savePitcher !== null ? game.savePitcher.id : null,
+      comment: game.comment
     })
   },
 

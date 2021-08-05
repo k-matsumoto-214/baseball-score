@@ -153,11 +153,12 @@
           </v-row>
           <div v-if="nowBatter !== null">
             <v-row
-              v-if="beforeAtBat !== null"
               justify="space-between"
               class="mt-4 px-1"
+              style="height: 20px"
             >
-              <p 
+              <p
+                v-if="beforeAtBat !== null"
                 class="text-caption pb-0 mb-0"
                 style="color: #F06292;"
                 @click="isOpenDeleteAtBatModal = true"
@@ -165,6 +166,7 @@
                 前の打者へ
               </p>
               <p 
+                v-if="beforeAtBat !== null"
                 class="text-caption pb-0 mb-0"
                 style="color: #64B5F6;"
                 @click="isOpenEndModal = true"
@@ -331,7 +333,7 @@
               </v-menu>
               <v-btn
                 v-bind:disabled="firstRunner === null && secondRunner === null && thirdRunner === null"
-                color="blue darken-4"
+                color="purple lighten-2"
                 class="white--text"
                 @click="openSpecialModal()"
               >
@@ -1087,16 +1089,16 @@
                 </v-container>
               </v-card>
             </v-dialog>
-            <v-dialog v-if="!game.resultFlg" v-model="isOpenEndModal" max-width="640">
+            <v-dialog v-model="isOpenEndModal" max-width="640">
               <v-card class="px-6 py-8">
                 <v-card-text>VS 「{{ game.opponentTeam  }}」を終了します。一度終了した試合は編集できません。<br>本当に終了しますか？</v-card-text>
                 <v-row justify="center">
-                  <v-btn color="pink lighten-2" @click="endGame()" class="mr-4 mt-4 white--text">終了</v-btn>
+                  <v-btn color="pink lighten-2" @click="openResponsiblePitcherModal()" class="mr-4 mt-4 white--text">終了</v-btn>
                   <v-btn @click="isOpenEndModal = false" class="mt-4">やめる</v-btn>
                 </v-row>
               </v-card>
             </v-dialog>
-            <v-dialog v-if="!game.resultFlg" v-model="isOpenDeleteAtBatModal" max-width="640">
+            <v-dialog v-model="isOpenDeleteAtBatModal" max-width="640">
               <v-card class="px-6 py-8">
                 <v-card-text>ひとつ前の打者に戻ります。<br>入力していた盗塁、得点、失策等の情報はリセットされます<br>本当に戻りますか？</v-card-text>
                 <v-row justify="center">
@@ -1108,6 +1110,70 @@
           </div>
         </div>
       </div>
+      <v-dialog
+        v-model="isOpenResponsiblePitcherModal"
+        max-width="640"
+        fullscreen
+      >
+        <v-card>
+          <v-container>
+            <p class="mt-2">責任投手を設定してください</p>
+            <v-select
+              v-if="game.result === 0"
+              :items="pitchers"
+              item-text="name"
+              item-value="id"
+              label="勝ち"
+              dense
+              outlined
+              v-model="game.winningPitcher"
+              return-object
+              class="px-2"
+            ></v-select>
+            <v-select
+              v-if="game.result === 1"
+              :items="pitchers"
+              item-text="name"
+              item-value="id"
+              label="負け"
+              dense
+              outlined
+              v-model="game.losingPitcher"
+              return-object
+              class="px-2"
+            ></v-select>
+            <v-select
+              v-if="game.result === 0"
+              :items="pitchers"
+              item-text="name"
+              item-value="id"
+              label="セーブ"
+              dense
+              outlined
+              v-model="game.savePitcher"
+              return-object
+              class="px-2"
+            ></v-select>
+            <p class="mt-2">戦評を入力してください</p>
+            <v-textarea
+              v-model="game.comment"
+              :error-messages="gameCommentErrors"
+              :counter="1000"
+              outlined
+              label="戦評"
+              class="mt-3 px-2"
+              style="height: 150px;"
+              @input="$v.game.comment.$touch()"
+              @blur="$v.game.comment.$touch()"
+            ></v-textarea>
+            <v-row
+              justify="center"
+            >
+              <v-btn color="pink lighten-2" @click="endGame()" class="mt-10 white--text">確定</v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
     </v-card>
   </v-container>
 </template>
@@ -1156,6 +1222,9 @@ export default {
     },
     event: {
       comment: { maxLength: maxLength(200) }
+    },
+    game: {
+      comment: { maxLength: maxLength(1000) }
     }
   },
   data() {
@@ -1173,7 +1242,11 @@ export default {
         resultFlg: false,
         lineupingStatus: null,
         topLineup: null,
-        bottomLineup: null
+        bottomLineup: null,
+        winningPitcher: null,
+        losingPitcher: null,
+        savePitcher: null,
+        comment: null
       },
       team: {},
       players: [],
@@ -1226,6 +1299,10 @@ export default {
       wpFlg: false,
       startRunners: [],
       startOutCount: null,
+      pitchers: [{
+        id: null,
+        name: '該当なし'
+      }],
       errorMessage: '',
       directionErrorMessage: '',
       runnerErrorMessage: '',
@@ -1243,7 +1320,8 @@ export default {
       isOpenSpecialModal: false,
       isOpenEernedForSpecialModal: false,
       isOpenEndModal: false,
-      isOpenDeleteAtBatModal: false
+      isOpenDeleteAtBatModal: false,
+      isOpenResponsiblePitcherModal: false
     }
   },
   created() {
@@ -1398,6 +1476,12 @@ export default {
       const errors = []
       if (!this.$v.event.comment.$dirty) return errors
       !this.$v.event.comment.maxLength && errors.push('コメントは200文字以内です。')
+      return errors
+    },
+    gameCommentErrors () {
+      const errors = []
+      if (!this.$v.game.comment.$dirty) return errors
+      !this.$v.game.comment.maxLength && errors.push('戦評は1000文字以内です。')
       return errors
     }
   },
@@ -1741,6 +1825,10 @@ export default {
       this.atBat.comment = null
     },
     saveResult() {
+      this.$v.atBat.$touch()
+      if (this.$v.atBat.$invalid) {
+        return
+      }
       this.directionErrorMessage = ''
       this.runnerErrorMessage = ''
       // 打球方向が必要な打撃結果の時はバリデーションあり
@@ -1974,6 +2062,10 @@ export default {
       this.event.comment = null
     },
     saveSteal() {
+      this.$v.event.$touch()
+      if (this.$v.event.$invalid) {
+        return
+      }
       this.stealErrorMessage = ''
       if (this.firstRunner !== null && this.firstRunner.successFlg === 'true') { // 一塁ランナーが成功したとき
         if (this.secondRunner !== null && this.secondRunner.successFlg === 'null') { // 二塁ランナーがいて企図なしの時
@@ -2256,6 +2348,10 @@ export default {
       this.event.comment = null
     },
     saveError() {
+      this.$v.event.$touch()
+      if (this.$v.event.$invalid) {
+        return
+      }
       this.directionErrorMessage = ''
       this.runnerErrorMessage = ''
       if (this.atBat.direction === null) {
@@ -2495,6 +2591,10 @@ export default {
       this.event.comment = null
     },
     saveBatteryError() {
+      this.$v.event.$touch()
+      if (this.$v.event.$invalid) {
+        return
+      }
       this.runnerErrorMessage = ''
       if (this.firstRunners.length > 1) {
         this.runnerErrorMessage = '一塁ランナーが重複しています。'
@@ -2732,6 +2832,10 @@ export default {
       this.event.comment = null
     },
     saveSpecial() {
+      this.$v.event.$touch()
+      if (this.$v.event.$invalid) {
+        return
+      }
       this.runnerErrorMessage = ''
       if (this.firstRunners.length > 1) {
         this.runnerErrorMessage = '一塁ランナーが重複しています。'
@@ -3021,7 +3125,8 @@ export default {
       this.error = {}
       this.steals = []
     },
-    async endGame() {
+    async openResponsiblePitcherModal() {
+      
       try {
         const score = await RunApi.getRunsByGameId(this.game.id)
         this.game.topScore = score.topScore
@@ -3045,14 +3150,58 @@ export default {
         }
         this.game.resultFlg = true
         this.game.inning = this.atBat.inning
+
+        // 引き分けの場合は責任投手選択をスキップして終了
+        if (this.game.result === 2) {
+          this.endGame()
+          this.isOpenResponsiblePitcherModal = false
+        }
+
+        // 登板投手の取得　勝ち用と負け用
+        let pitchers = []
+        const lineups = this.game.topFlg ? this.game.topLineup : this.game.bottomLineup
+        lineups.filter((lineup) => {
+          lineup.orderDetails.filter((orderDetail) => {
+            if (orderDetail.fieldNumber === 1) {
+              pitchers.push(orderDetail.playerId)
+            }
+          })
+        })
+        pitchers = [...new Set(pitchers)]; // 重複を削除
+
+        pitchers.filter((pitcherId) => {
+          this.players.filter((player) => {
+            if (player.id === pitcherId)
+            this.pitchers.push({
+              id: pitcherId,
+              name: player.name
+            })
+            return
+          })
+        })
+
+        this.isOpenResponsiblePitcherModal = true
+        this.isOpenEndModal = false
+      } catch (error) {
+        console.log(error)
+        this.isOpenResponsiblePitcherModal = false
+        location.reload();
+      }
+    },
+    async endGame() {
+      this.$v.game.$touch()
+      if (this.$v.game.$invalid) {
+        return
+      }
+      try {
         await GameApi.updateGame(this.game)
       } catch (error) {
         console.log(error)
-        this.isOpenEndModal = false
-        // location.reload();
+        this.isOpenResponsiblePitcherModal = false
+        location.reload();
       }
-      this.isOpenEndModal = false
-      // location.reload();
+      this.isOpenResponsiblePitcherModal = false
+      location.reload();
     },
     async deleteAtBat() {
       try {
