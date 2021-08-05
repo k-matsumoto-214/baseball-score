@@ -3428,6 +3428,7 @@ export default {
         return await GameApi.getGame(this.game.id)
       } catch (error) {
         console.log(error)
+      }
     }
   }
 }
