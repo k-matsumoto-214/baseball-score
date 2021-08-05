@@ -348,21 +348,43 @@
             </v-container>
           </div>
           <div v-else-if="isGameProcess">
-            <v-card>
-                <div v-for="process,idx in processes" :key="idx">
-                   <v-subheader>{{ process.inningInfo }}</v-subheader>
-                  <div v-for="batterProcess, idx in process.batterProcesses" :key="idx">
-                    <v-list-item-content class="mb-0">{{ batterProcess.batter }}</v-list-item-content>
-                    <div v-for="beforeBattingEvent, idx in batterProcess.beforeBattingEvents" :key="idx">
-                      <v-list-item-subtitle>{{ beforeBattingEvent }}</v-list-item-subtitle>
+            <div v-for="process,idx in processes" :key="idx">
+                <v-subheader class="grey darken-4 white--text">{{ process.inningInfo }}</v-subheader>
+                <div v-for="batterProcess, idx in process.batterProcesses" :key="idx">
+                  <v-list-item-content class="grey darken-1 white--text px-2">{{ batterProcess.batter }}</v-list-item-content>
+                  <div v-if="batterProcess.beforeBattingEvents.length !== 0" class="px-2 pt-2">
+                    <div class="grey lighten-2 rounded-lg px-5 py-2">
+                      <div v-for="beforeBattingEvent, idx in batterProcess.beforeBattingEvents" :key="idx">
+                        <v-list-item-subtitle class="event">{{ beforeBattingEvent }}</v-list-item-subtitle>
+                      </div>
                     </div>
+                  </div>
+                  <div class="px-2 py-2">
                     <v-list-item-subtitle style="font-weight: 600;">{{ batterProcess.battingResult }}</v-list-item-subtitle>
-                    <div v-for="afterBattingEvent, idx in batterProcess.afterBattingEvents" :key="idx">
-                      <v-list-item-subtitle>{{ afterBattingEvent }}</v-list-item-subtitle>
+                  </div>
+                  <div v-if="batterProcess.afterBattingEvents.length !== 0" class="px-2 pb-2">
+                    <div class="grey lighten-2 rounded-lg px-5 py-2">
+                      <div v-for="afterBattingEvent, idx in batterProcess.afterBattingEvents" :key="idx">
+                        <v-list-item-subtitle class="event">{{ afterBattingEvent }}</v-list-item-subtitle>
+                      </div>
                     </div>
                   </div>
                 </div>
-            </v-card>
+            </div>
+            <v-fab-transition>
+                <v-btn
+                  color="#039BE5"
+                  fab
+                  dark
+                  small
+                  bottom
+                  right
+                  fixed
+                  @click="$vuetify.goTo(0)"
+                >
+                  <v-icon>mdi-apple-keyboard-control</v-icon>
+                </v-btn>
+              </v-fab-transition>
           </div>
           <div v-else-if="isGameStats">
             選手成績
@@ -3269,5 +3291,9 @@ export default {
 .active {
   background-color: #F9A825;
   border-radius: 5px;
+}
+.event {
+  flex: 1 1 100%;
+  white-space: pre-wrap;
 }
 </style>
