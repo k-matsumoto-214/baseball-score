@@ -311,10 +311,17 @@
                 <v-btn
                   v-bind:disabled="firstRunner === null && secondRunner === null && thirdRunner === null"
                   color="purple lighten-2"
-                  class="white--text"
+                  class="white--text mr-5"
                   @click="openSpecialModal()"
                 >
                   <span>特殊</span>
+                </v-btn>
+                <v-btn
+                  color="brown darken-1"
+                  class="white--text"
+                  @click="openPlayerChangeModal()"
+                >
+                  <span>交代</span>
                 </v-btn>
               </v-row>
               <event-info
@@ -387,10 +394,51 @@
               </v-fab-transition>
           </div>
           <div v-else-if="isGameStats">
-            選手成績
+            <v-list-item-subtitle class="px-2 pt-2">打者</v-list-item-subtitle>
+            <v-col style="padding: 0 0px; width: 100%;">
+              <v-simple-table dense fixed-header style="padding: 0 0px; border-radius: 0px;">
+                <thead>
+                  <tr class="text-center">
+                    <th class="text-center">選手</th>
+                    <th class="text-center">打席</th>
+                    <th class="text-center">打数</th>
+                    <th class="text-center">一</th>
+                    <th class="text-center">二</th>
+                    <th class="text-center">三</th>
+                    <th class="text-center">本</th>
+                    <th class="text-center">犠</th>
+                    <th class="text-center">振</th>
+                    <th class="text-center">四死</th>
+                    <th class="text-center">打点</th>
+                    <th class="text-center">得点</th>
+                    <th class="text-center">盗</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="stat, idx in stats" :key="idx" class="text-center">
+                      <td>{{ stat.name }}</td>
+                      <td>{{ stat.appear }}</td>
+                      <td>{{ stat.batting }}</td>
+                      <td>{{ stat.hit }}</td>
+                      <td>{{ stat.two }}</td>
+                      <td>{{ stat.three }}</td>
+                      <td>{{ stat.hr }}</td>
+                      <td>{{ stat.sac }}</td>
+                      <td>{{ stat.k }}</td>
+                      <td>{{ stat.bb }}</td>
+                      <td>{{ stat.rbi }}</td>
+                      <td>{{ stat.score }}</td>
+                      <td>{{ stat.steal }}</td>
+                    </tr>
+                </tbody>
+              </v-simple-table>
+            </v-col>
           </div>   
         </div>       
       </div>  
+
+
+
 
 
 
@@ -1208,6 +1256,73 @@
           </v-container>
         </v-card>
       </v-dialog>
+      <v-dialog
+        v-model="isOpenPlayerChangeModal"
+        max-width="640"
+        fullscreen
+        ref="player_change_modal"
+      >
+        <v-card>
+          <v-container>
+            <p class="mt-2">選手交代を設定してください</p>
+            <v-row justify="center">
+              <v-col cols="5">
+                <p>選手一覧</p>
+                <draggable v-model="players" group="starters" :animation="300" :delay="50"
+                  style="padding:5px 0; height: 550px; overflow-y: scroll;"
+                >
+                  <lineup-list
+                    v-for="player in players"
+                    :key="player.id"
+                    :player="player"
+                  />
+                </draggable>
+              </v-col>
+              <v-col cols="7">         
+                <p>出場選手</p>
+                <v-row justify="center">
+                  <v-col cols="9">
+                    <draggable v-model="nowPlayers" group="starters" :animation="300" :delay="50" style="padding:5px 0">
+                      <lineup-list
+                        v-for="(player,idx) in nowPlayers"
+                        :key="player.id"
+                        :player="player"
+                        :number="idx + 1"
+                      />
+                      <p v-if="starters.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                    </draggable>
+                  </v-col>
+                  <v-col cols="3">
+                    <draggable v-model="nowFields" :animation="300" :delay="50" style="padding:5px 0">
+                      <field-list
+                        v-for="(nowField,idx) in nowFields"
+                        :key="idx"
+                        :fieldNumber="nowField"
+                      />
+                    </draggable>
+                  </v-col>
+                </v-row>
+              </v-col>
+            </v-row>
+            <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
+            <v-row justify="center" class="pt-4">
+              <v-btn
+                class="mr-4 mb-4"
+                color="primary"
+                @click="savePlayerChange()"
+              >
+                確定
+              </v-btn>
+              <v-btn
+                class="mb-4"
+                @click="closePlayerChangeModal()"
+              >
+                戻る
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
     </v-card>
 </template>
 
@@ -1358,8 +1473,12 @@ export default {
       isGameEdit: true,
       isGameProcess: false,
       isGameStats: false,
+      isOpenPlayerChangeModal: false,
       score: null,
-      processes: []
+      processes: [],
+      stats: [],
+      nowPlayers: [],
+      nowField: []
     }
   },
   created() {
@@ -3271,10 +3390,11 @@ export default {
       this.isGameStats = false
       await this.fetchProcesses()
     },
-    showStats() {
+    async showStats() {
       this.isGameEdit = false
       this.isGameProcess = false
       this.isGameStats = true
+      await this.fetchStats()
     },
     async fetchProcesses() {
       try {
@@ -3282,6 +3402,32 @@ export default {
       } catch(error) {
         console.log(error)
       }
+    },
+    async fetchStats() {
+      try {
+        this.stats = await GameApi.getStats(this.game.id)
+      } catch(error) {
+        console.log(error)
+      }
+    },
+    openPlayerChangeModal() {
+      const game = this.getGame()
+      const lineups = game.topFlg ? game.topLineup : game.bottomLineup
+      lineups.filter((lineup) => {
+        lineup.orderDetails[]
+        //saigonoyatuwotoru
+      })
+      this.isOpenPlayerChangeModal = true
+    },
+    closePlayerChangeModal() {
+      this.isOpenPlayerChangeModal = false
+      this.$refs.player_change_modal.scrollTop = 0;
+    },
+    async getGame() {
+      try {
+        return await GameApi.getGame(this.game.id)
+      } catch (error) {
+        console.log(error)
     }
   }
 }

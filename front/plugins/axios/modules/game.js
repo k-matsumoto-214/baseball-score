@@ -51,5 +51,9 @@ export default {
 
   getProcess(id) {
     return axios.$get(`games/process/${id}`)
+  },
+
+  getStats(id) {
+    return axios.$get(`games/stats/${id}`)
   }
 }

@@ -40,7 +40,8 @@ export default {
     "@nuxtjs/axios",
     "@nuxtjs/auth",
     "@nuxtjs/proxy",
-    "@nuxtjs/vuetify"
+    "@nuxtjs/vuetify",
+    'cookie-universal-nuxt'
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
