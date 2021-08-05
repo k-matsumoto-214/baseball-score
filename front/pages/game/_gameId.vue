@@ -60,18 +60,17 @@
           </v-row>
         </div>
         <div v-else-if="game.lineupingStatus === 2">
-          <v-tabs grow dark style="height: 40px;" class="mt-3">
-            <v-tab>結果入力</v-tab>
-            <v-tab>試合経過</v-tab>
-            <v-tab>選手成績</v-tab>
+          <v-tabs grow dark style="height: 40px;" class="mt-3 black">
+            <v-tab @click="editGame()" class="black">結果入力</v-tab>
+            <v-tab @click="showProcess()" class="black">試合経過</v-tab>
+            <v-tab @click="showStats()" class="black">選手成績</v-tab>
           </v-tabs>
           <v-row v-if="score !== null" class="mt-2" style="width: 100%; margin: auto 0;">
-            <v-col style="padding: 0 0px; width: 15%;">
-              <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;">
+            <v-col style="padding: 0 0px; width: 10%;">
+              <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;" class="black">
                   <thead>
                     <tr>
                       <th class="text-left">
-                        Team
                       </th>
                     </tr>
                   </thead>
@@ -89,8 +88,8 @@
                   </tbody>
               </v-simple-table>
             </v-col>
-            <v-col style="padding: 0 0px; width: 75%;">
-              <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;">
+            <v-col style="padding: 0 0px; width: 80%;">
+              <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;" class="black">
                 <thead>
                   <tr>
                     <th
@@ -127,12 +126,12 @@
               </v-simple-table>
             </v-col>
             <v-col style="padding: 0 0px; width: 10%;">
-              <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;">
+              <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;" class="black">
                   <thead>
                     <tr class="text-center">
                       <th class="text-center">R</th>
-                      <th>H</th>
-                      <th>E</th>
+                      <th class="text-center">H</th>
+                      <th class="text-center">E</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -150,31 +149,9 @@
               </v-simple-table>
             </v-col>
           </v-row>
-          <div v-if="nowBatter !== null">
+          <div v-if="nowBatter !== null && isGameEdit">
             <v-container>
               <inning-info :atBat="atBat" />
-              <v-row
-                justify="space-between"
-                class="mt-3 px-2"
-                style="height: 20px"
-              >
-                <p
-                  v-if="beforeAtBat !== null"
-                  class="text-caption pb-0 mb-0"
-                  style="color: #F06292;"
-                  @click="isOpenDeleteAtBatModal = true"
-                >
-                  前の打者へ
-                </p>
-                <p 
-                  v-if="beforeAtBat !== null"
-                  class="text-caption pb-0 mb-0"
-                  style="color: #64B5F6;"
-                  @click="isOpenEndModal = true"
-                >
-                  試合を終了する
-                </p>
-              </v-row>
               <v-row justify="space-between" class="mt-3">
                 <v-col cols="5">
                   <pitcher-info
@@ -346,771 +323,805 @@
                 :startRunners="startRunners"
                 :startOutCount="startOutCount"
               />
+              <v-row
+                justify="space-between"
+                class="mt-5 px-2 mb-2"
+                style="height: 20px"
+              >
+                <p
+                  v-if="beforeAtBat !== null"
+                  class="text-caption"
+                  style="color: #90A4AE;"
+                  @click="isOpenDeleteAtBatModal = true"
+                >
+                  前の打者へ
+                </p>
+                <p 
+                  v-if="beforeAtBat !== null"
+                  class="text-caption"
+                  style="color: #90A4AE;"
+                  @click="isOpenEndModal = true"
+                >
+                  試合を終了する
+                </p>
+              </v-row>
             </v-container>
-            
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            <v-dialog
-              v-model="isOpenResultModal"
-              max-width="640"
-              fullscreen
-              ref="hit_modal"
-            >
-              <v-card>
-                <v-container>
-                  <p class="mt-2">ランナー状況を入力してください</p>
-                  <v-row justify="center">
-                    <v-col cols="6">
-                      <p>一塁</p>
-                      <draggable v-model="firstRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(firstRunner) in firstRunners"
-                          :key="firstRunner.id"
-                          :player="firstRunner"
-                        />
-                        <p v-if="firstRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                    <v-col cols="6">
-                      <p>二塁</p>
-                      <draggable v-model="secondRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(secondRunner) in secondRunners"
-                          :key="secondRunner.id"
-                          :player="secondRunner"
-                        />
-                        <p v-if="secondRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <v-row justify="center">
-                    <v-col cols="6">
-                      <p>三塁</p>
-                      <draggable v-model="thirdRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(thirdRunner) in thirdRunners"
-                          :key="thirdRunner.id"
-                          :player="thirdRunner"
-                        />
-                        <p v-if="thirdRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                    <v-col cols="6">
-                      <p style="color: #EC407A">得点</p>
-                      <draggable v-model="homeRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(homeRunner) in homeRunners"
-                          :key="homeRunner.id"
-                          :player="homeRunner"
-                        />
-                        <p v-if="homeRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col cols="6">
-                      <p style="color: #42A5F5">アウト</p>
-                      <draggable v-model="outRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(outRunner) in outRunners"
-                          :key="outRunner.id"
-                          :player="outRunner"
-                        />
-                        <p v-if="outRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <div
-                    v-if="!(atBat.result === 4 ||
-                    atBat.result === 5 ||
-                    atBat.result === 9 ||
-                    atBat.result === 10 ||
-                    atBat.result === 13 ||
-                    atBat.result === 14)"
-                  >
-                    <p class="mt-2">打球方向を選択してください</p>
-                    <hit-direction-selector
-                      class="mt-5"
-                      :direction="atBat.direction"
-                      @change-direction="atBat.direction=$event"
-                    />
-                  </div>
-                  <v-text-field
-                    v-model="atBat.comment"
-                    :error-messages="commentErrors"
-                    :counter="200"
-                    outlined
-                    label="コメント"
-                    class="mt-3"
-                    @input="$v.atBat.comment.$touch()"
-                    @blur="$v.atBat.comment.$touch()"
-                  ></v-text-field>
-                  <p class="text-center" style="color: #FF4081">{{ directionErrorMessage }}</p>
-                  <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
-                  <v-row justify="center">
-                    <v-btn
-                      class="mr-4 mb-4"
-                      color="primary"
-                      @click="saveResult()"
-                    >
-                      確定
-                    </v-btn>
-                    <v-btn
-                      class="mb-4"
-                      @click="closeResultModal()"
-                    >
-                      戻る
-                    </v-btn>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
-            <v-dialog
-              v-model="isOpenRbiAndEernedModal"
-              max-width="640"
-              fullscreen
-            >
-              <v-card>
-                <v-container>
-                  <div>
-                    <p class="mt-2">得点の自責点、打点を設定してください</p>
-                    <div
-                      v-for="homeRunner in homeRunners"
-                      :key="homeRunner.id"
-                    >
-                      <div class="d-flex">
-                        <v-list-item-avatar>
-                          <v-img :src="homeRunner.image ? homeRunner.image : '../noimage.png'"></v-img>
-                        </v-list-item-avatar>
-                        <v-list-item-content>
-                          <v-list-item-title v-text="homeRunner.name" style="margin-left: 5px"></v-list-item-title>
-                        </v-list-item-content>
-                        <v-checkbox
-                          v-model="homeRunner.earnedFlg"
-                          :label="'自責点'"
-                          class="mr-4 ml-2"
-                        ></v-checkbox>
-                        <v-checkbox
-                          v-model="homeRunner.rbiFlg"
-                          :label="'打点'"
-                          class="mr-4"
-                        ></v-checkbox>
-                      </div>
-                    </div>
-                  </div>
-                  <v-row justify="center">
-                    <v-btn
-                      class="mt-8 mb-4"
-                      color="primary"
-                      @click="saveResult()"
-                    >
-                      確定
-                    </v-btn>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
-            <v-dialog
-              v-model="isOpenStealModal"
-              max-width="640"
-              fullscreen
-              ref="steal_modal"
-            >
-              <v-card>
-                <v-container>
-                  <p class="mt-2">盗塁状況を入力してください</p>
-                  <div class="d-flex" v-if="firstRunner !== null">
-                    一塁
-                    <v-list-item-avatar>
-                      <v-img :src="firstRunner.image ? firstRunner.image : '../noimage.png'"></v-img>
-                    </v-list-item-avatar>
-                    <v-list-item-content>
-                      <v-list-item-title v-text="firstRunner.name" style="margin-left: 5px"></v-list-item-title>
-                    </v-list-item-content>
-                    <v-radio-group v-model="firstRunner.successFlg">
-                      <v-radio
-                        :label="`成功`"
-                        :value="'true'"
-                      ></v-radio>
-                      <v-radio
-                        :label="`失敗`"
-                        :value="'false'"
-                      ></v-radio>
-                      <v-radio 
-                        :label="`企図なし`"
-                        :value="'null'"
-                      ></v-radio>
-                    </v-radio-group>
-                  </div>
-                  <div class="d-flex" v-if="secondRunner !== null">
-                    二塁
-                    <v-list-item-avatar>
-                      <v-img :src="secondRunner.image ? secondRunner.image : '../noimage.png'"></v-img>
-                    </v-list-item-avatar>
-                    <v-list-item-content>
-                      <v-list-item-title v-text="secondRunner.name" style="margin-left: 5px"></v-list-item-title>
-                    </v-list-item-content>
-                    <v-radio-group v-model="secondRunner.successFlg">
-                      <v-radio
-                        :label="`成功`"
-                        :value="'true'"
-                      ></v-radio>
-                      <v-radio
-                        :label="`失敗`"
-                        :value="'false'"
-                      ></v-radio>
-                      <v-radio 
-                        :label="`企図なし`"
-                        :value="'null'"
-                      ></v-radio>
-                    </v-radio-group>
-                  </div>
-                  <div class="d-flex" v-if="thirdRunner !== null">
-                    三塁
-                    <v-list-item-avatar>
-                      <v-img :src="thirdRunner.image ? thirdRunner.image : '../noimage.png'"></v-img>
-                    </v-list-item-avatar>
-                    <v-list-item-content>
-                      <v-list-item-title v-text="thirdRunner.name" style="margin-left: 5px"></v-list-item-title>
-                    </v-list-item-content>
-                    <v-radio-group v-model="thirdRunner.successFlg">
-                      <v-radio
-                        :label="`成功`"
-                        :value="'true'"
-                      ></v-radio>
-                      <v-radio
-                        :label="`失敗`"
-                        :value="'false'"
-                      ></v-radio>
-                      <v-radio 
-                        :label="`企図なし`"
-                        :value="'null'"
-                      ></v-radio>
-                    </v-radio-group>
-                  </div>
-                  <v-text-field
-                    v-model="event.comment"
-                    :error-messages="eventCommentErrors"
-                    :counter="200"
-                    outlined
-                    label="コメント"
-                    class="mt-3"
-                    @input="$v.event.comment.$touch()"
-                    @blur="$v.event.comment.$touch()"
-                  ></v-text-field>
-                  <p class="text-center" style="color: #FF4081">{{ stealErrorMessage }}</p>
-                  <v-row justify="center">
-                    <v-btn
-                      class="mr-4 mb-4"
-                      color="primary"
-                      @click="saveSteal()"
-                    >
-                      確定
-                    </v-btn>
-                    <v-btn
-                      class="mb-4"
-                      @click="closeStealModal()"
-                    >
-                      戻る
-                    </v-btn>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
-            <v-dialog
-              v-model="isOpenEernedModal"
-              max-width="640"
-              fullscreen
-            >
-              <v-card>
-                <v-container>
-                  <div>
-                    <p class="mt-2">得点の自責点を設定してください</p>
-                    <div class="d-flex" v-if="thirdRunner !== null">
-                      <v-list-item-avatar>
-                        <v-img :src="thirdRunner.image ? thirdRunner.image : '../noimage.png'"></v-img>
-                      </v-list-item-avatar>
-                      <v-list-item-content>
-                        <v-list-item-title v-text="thirdRunner.name" style="margin-left: 5px"></v-list-item-title>
-                      </v-list-item-content>
-                      <v-checkbox
-                        v-model="thirdRunner.earnedFlg"
-                        :label="'自責点'"
-                        class="mr-4 ml-2"
-                      ></v-checkbox>
-                    </div>
-                  </div>
-                  <v-row justify="center">
-                    <v-btn
-                      class="mt-8 mb-4"
-                      color="primary"
-                      @click="saveSteal()"
-                    >
-                      確定
-                    </v-btn>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
-            <v-dialog
-              v-model="isOpenErrorModal"
-              max-width="640"
-              fullscreen
-              ref="error_modal"
-            >
-              <v-card>
-                <v-container>
-                  <p class="mt-2">ランナー状況を入力してください</p>
-                  <v-row justify="center">
-                    <v-col cols="6">
-                      <p>一塁</p>
-                      <draggable v-model="firstRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(firstRunner) in firstRunners"
-                          :key="firstRunner.id"
-                          :player="firstRunner"
-                        />
-                        <p v-if="firstRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                    <v-col cols="6">
-                      <p>二塁</p>
-                      <draggable v-model="secondRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(secondRunner) in secondRunners"
-                          :key="secondRunner.id"
-                          :player="secondRunner"
-                        />
-                        <p v-if="secondRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <v-row justify="center">
-                    <v-col cols="6">
-                      <p>三塁</p>
-                      <draggable v-model="thirdRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(thirdRunner) in thirdRunners"
-                          :key="thirdRunner.id"
-                          :player="thirdRunner"
-                        />
-                        <p v-if="thirdRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                    <v-col cols="6">
-                      <p style="color: #EC407A">得点</p>
-                      <draggable v-model="homeRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(homeRunner) in homeRunners"
-                          :key="homeRunner.id"
-                          :player="homeRunner"
-                        />
-                        <p v-if="homeRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col cols="6">
-                      <p style="color: #42A5F5">アウト</p>
-                      <draggable v-model="outRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(outRunner) in outRunners"
-                          :key="outRunner.id"
-                          :player="outRunner"
-                        />
-                        <p v-if="outRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <p class="mt-2">エラーのあった守備位置を選択してください</p>
-                  <hit-direction-selector
-                    class="mt-5"
-                    :direction="atBat.direction"
-                    @change-direction="atBat.direction=$event"
-                  />
-                  <v-text-field
-                    v-model="event.comment"
-                    :error-messages="eventCommentErrors"
-                    :counter="200"
-                    outlined
-                    label="コメント"
-                    class="mt-3"
-                    @input="$v.event.comment.$touch()"
-                    @blur="$v.event.comment.$touch()"
-                  ></v-text-field>
-                  <p class="text-center" style="color: #FF4081">{{ directionErrorMessage }}</p>
-                  <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
-                  <v-row justify="center">
-                    <v-btn
-                      class="mr-4 mb-4"
-                      color="primary"
-                      @click="saveError()"
-                    >
-                      確定
-                    </v-btn>
-                    <v-btn
-                      class="mb-4"
-                      @click="closeErrorModal()"
-                    >
-                      戻る
-                    </v-btn>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
-            <v-dialog
-              v-model="isOpenEernedForErrorModal"
-              max-width="640"
-              fullscreen
-            >
-              <v-card>
-                <v-container>
-                  <div>
-                    <p class="mt-2">得点の自責点を設定してください</p>
-                    <div
-                      v-for="homeRunner in homeRunners"
-                      :key="homeRunner.id"
-                    >
-                      <div class="d-flex">
-                        <v-list-item-avatar>
-                          <v-img :src="homeRunner.image ? homeRunner.image : '../noimage.png'"></v-img>
-                        </v-list-item-avatar>
-                        <v-list-item-content>
-                          <v-list-item-title v-text="homeRunner.name" style="margin-left: 5px"></v-list-item-title>
-                        </v-list-item-content>
-                        <v-checkbox
-                          v-model="homeRunner.earnedFlg"
-                          :label="'自責点'"
-                          class="mr-4 ml-2"
-                        ></v-checkbox>
-                      </div>
-                    </div>
-                  </div>
-                  <v-row justify="center">
-                    <v-btn
-                      class="mt-8 mb-4"
-                      color="primary"
-                      @click="saveError()"
-                    >
-                      確定
-                    </v-btn>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
-            <v-dialog
-              v-model="isOpenBatteryErrorModal"
-              max-width="640"
-              fullscreen
-              ref="battery_error_modal"
-            >
-              <v-card>
-                <v-container>
-                  <p class="mt-2">ランナー状況を入力してください</p>
-                  <v-row justify="center">
-                    <v-col cols="6">
-                      <p>一塁</p>
-                      <draggable v-model="firstRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(firstRunner) in firstRunners"
-                          :key="firstRunner.id"
-                          :player="firstRunner"
-                        />
-                        <p v-if="firstRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                    <v-col cols="6">
-                      <p>二塁</p>
-                      <draggable v-model="secondRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(secondRunner) in secondRunners"
-                          :key="secondRunner.id"
-                          :player="secondRunner"
-                        />
-                        <p v-if="secondRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <v-row justify="center">
-                    <v-col cols="6">
-                      <p>三塁</p>
-                      <draggable v-model="thirdRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(thirdRunner) in thirdRunners"
-                          :key="thirdRunner.id"
-                          :player="thirdRunner"
-                        />
-                        <p v-if="thirdRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                    <v-col cols="6">
-                      <p style="color: #EC407A">得点</p>
-                      <draggable v-model="homeRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(homeRunner) in homeRunners"
-                          :key="homeRunner.id"
-                          :player="homeRunner"
-                        />
-                        <p v-if="homeRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col cols="6">
-                      <p style="color: #42A5F5">アウト</p>
-                      <draggable v-model="outRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(outRunner) in outRunners"
-                          :key="outRunner.id"
-                          :player="outRunner"
-                        />
-                        <p v-if="outRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <v-text-field
-                    v-model="event.comment"
-                    :error-messages="eventCommentErrors"
-                    :counter="200"
-                    outlined
-                    label="コメント"
-                    class="mt-3"
-                    @input="$v.event.comment.$touch()"
-                    @blur="$v.event.comment.$touch()"
-                  ></v-text-field>
-                  <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
-                  <v-row justify="center">
-                    <v-btn
-                      class="mr-4 mb-4"
-                      color="primary"
-                      @click="saveBatteryError()"
-                    >
-                      確定
-                    </v-btn>
-                    <v-btn
-                      class="mb-4"
-                      @click="closeBatteryErrorModal()"
-                    >
-                      戻る
-                    </v-btn>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
-            <v-dialog
-              v-model="isOpenEernedForBatteryErrorModal"
-              max-width="640"
-              fullscreen
-            >
-              <v-card>
-                <v-container>
-                  <div>
-                    <p class="mt-2">得点の自責点を設定してください</p>
-                    <div
-                      v-for="homeRunner in homeRunners"
-                      :key="homeRunner.id"
-                    >
-                      <div class="d-flex">
-                        <v-list-item-avatar>
-                          <v-img :src="homeRunner.image ? homeRunner.image : '../noimage.png'"></v-img>
-                        </v-list-item-avatar>
-                        <v-list-item-content>
-                          <v-list-item-title v-text="homeRunner.name" style="margin-left: 5px"></v-list-item-title>
-                        </v-list-item-content>
-                        <v-checkbox
-                          v-model="homeRunner.earnedFlg"
-                          :label="'自責点'"
-                          class="mr-4 ml-2"
-                        ></v-checkbox>
-                      </div>
-                    </div>
-                  </div>
-                  <v-row justify="center">
-                    <v-btn
-                      class="mt-8 mb-4"
-                      color="primary"
-                      @click="saveBatteryError()"
-                    >
-                      確定
-                    </v-btn>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
-            <v-dialog
-              v-model="isOpenSpecialModal"
-              max-width="640"
-              fullscreen
-              ref="special_modal"
-            >
-              <v-card>
-                <v-container>
-                  <p class="mt-2">ランナー状況を入力してください</p>
-                  <v-row justify="center">
-                    <v-col cols="6">
-                      <p>一塁</p>
-                      <draggable v-model="firstRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(firstRunner) in firstRunners"
-                          :key="firstRunner.id"
-                          :player="firstRunner"
-                        />
-                        <p v-if="firstRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                    <v-col cols="6">
-                      <p>二塁</p>
-                      <draggable v-model="secondRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(secondRunner) in secondRunners"
-                          :key="secondRunner.id"
-                          :player="secondRunner"
-                        />
-                        <p v-if="secondRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <v-row justify="center">
-                    <v-col cols="6">
-                      <p>三塁</p>
-                      <draggable v-model="thirdRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(thirdRunner) in thirdRunners"
-                          :key="thirdRunner.id"
-                          :player="thirdRunner"
-                        />
-                        <p v-if="thirdRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                    <v-col cols="6">
-                      <p style="color: #EC407A">得点</p>
-                      <draggable v-model="homeRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(homeRunner) in homeRunners"
-                          :key="homeRunner.id"
-                          :player="homeRunner"
-                        />
-                        <p v-if="homeRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <v-row>
-                    <v-col cols="6">
-                      <p style="color: #42A5F5">アウト</p>
-                      <draggable v-model="outRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
-                        <runner-list
-                          v-for="(outRunner) in outRunners"
-                          :key="outRunner.id"
-                          :player="outRunner"
-                        />
-                        <p v-if="outRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
-                      </draggable>
-                    </v-col>
-                  </v-row>
-                  <v-text-field
-                    v-model="event.comment"
-                    :error-messages="eventCommentErrors"
-                    :counter="200"
-                    outlined
-                    label="コメント"
-                    class="mt-3"
-                    @input="$v.event.comment.$touch()"
-                    @blur="$v.event.comment.$touch()"
-                  ></v-text-field>
-                  <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
-                  <v-row justify="center">
-                    <v-btn
-                      class="mr-4 mb-4"
-                      color="primary"
-                      @click="saveSpecial()"
-                    >
-                      確定
-                    </v-btn>
-                    <v-btn
-                      class="mb-4"
-                      @click="closeSpecialModal()"
-                    >
-                      戻る
-                    </v-btn>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
-            <v-dialog
-              v-model="isOpenEernedForSpecialModal"
-              max-width="640"
-              fullscreen
-            >
-              <v-card>
-                <v-container>
-                  <div>
-                    <p class="mt-2">得点の自責点を設定してください</p>
-                    <div
-                      v-for="homeRunner in homeRunners"
-                      :key="homeRunner.id"
-                    >
-                      <div class="d-flex">
-                        <v-list-item-avatar>
-                          <v-img :src="homeRunner.image ? homeRunner.image : '../noimage.png'"></v-img>
-                        </v-list-item-avatar>
-                        <v-list-item-content>
-                          <v-list-item-title v-text="homeRunner.name" style="margin-left: 5px"></v-list-item-title>
-                        </v-list-item-content>
-                        <v-checkbox
-                          v-model="homeRunner.earnedFlg"
-                          :label="'自責点'"
-                          class="mr-4 ml-2"
-                        ></v-checkbox>
-                      </div>
-                    </div>
-                  </div>
-                  <v-row justify="center">
-                    <v-btn
-                      class="mt-8 mb-4"
-                      color="primary"
-                      @click="saveSpecial()"
-                    >
-                      確定
-                    </v-btn>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
-            <v-dialog v-model="isOpenEndModal" max-width="640">
-              <v-card class="px-6 py-8">
-                <v-card-text>VS 「{{ game.opponentTeam  }}」を終了します。一度終了した試合は編集できません。<br>本当に終了しますか？</v-card-text>
-                <v-row justify="center">
-                  <v-btn color="pink lighten-2" @click="openResponsiblePitcherModal()" class="mr-4 mt-4 white--text">終了</v-btn>
-                  <v-btn @click="isOpenEndModal = false" class="mt-4">やめる</v-btn>
-                </v-row>
-              </v-card>
-            </v-dialog>
-            <v-dialog v-model="isOpenDeleteAtBatModal" max-width="640">
-              <v-card class="px-6 py-8">
-                <v-card-text>ひとつ前の打者に戻ります。<br>入力していた盗塁、得点、失策等の情報はリセットされます<br>本当に戻りますか？</v-card-text>
-                <v-row justify="center">
-                  <v-btn color="pink lighten-2" @click="deleteAtBat()" class="mr-4 mt-4 white--text">前の打者へ</v-btn>
-                  <v-btn @click="isOpenDeleteAtBatModal = false" class="mt-4">やめる</v-btn>
-                </v-row>
-              </v-card>
-            </v-dialog>
           </div>
-        </div>
-      </div>
+          <div v-else-if="isGameProcess">
+            <v-card>
+                <div v-for="process,idx in processes" :key="idx">
+                   <v-subheader>{{ process.inningInfo }}</v-subheader>
+                  <div v-for="batterProcess, idx in process.batterProcesses" :key="idx">
+                    <v-list-item-content class="mb-0">{{ batterProcess.batter }}</v-list-item-content>
+                    <div v-for="beforeBattingEvent, idx in batterProcess.beforeBattingEvents" :key="idx">
+                      <v-list-item-subtitle>{{ beforeBattingEvent }}</v-list-item-subtitle>
+                    </div>
+                    <v-list-item-subtitle style="font-weight: 600;">{{ batterProcess.battingResult }}</v-list-item-subtitle>
+                    <div v-for="afterBattingEvent, idx in batterProcess.afterBattingEvents" :key="idx">
+                      <v-list-item-subtitle>{{ afterBattingEvent }}</v-list-item-subtitle>
+                    </div>
+                  </div>
+                </div>
+            </v-card>
+          </div>
+          <div v-else-if="isGameStats">
+            選手成績
+          </div>   
+        </div>       
+      </div>  
+
+
+
+
+
+
+
+
+
+      <v-dialog
+        v-model="isOpenResultModal"
+        max-width="640"
+        fullscreen
+        ref="hit_modal"
+      >
+        <v-card>
+          <v-container>
+            <p class="mt-2">ランナー状況を入力してください</p>
+            <v-row justify="center">
+              <v-col cols="6">
+                <p>一塁</p>
+                <draggable v-model="firstRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(firstRunner) in firstRunners"
+                    :key="firstRunner.id"
+                    :player="firstRunner"
+                  />
+                  <p v-if="firstRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+              <v-col cols="6">
+                <p>二塁</p>
+                <draggable v-model="secondRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(secondRunner) in secondRunners"
+                    :key="secondRunner.id"
+                    :player="secondRunner"
+                  />
+                  <p v-if="secondRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <v-row justify="center">
+              <v-col cols="6">
+                <p>三塁</p>
+                <draggable v-model="thirdRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(thirdRunner) in thirdRunners"
+                    :key="thirdRunner.id"
+                    :player="thirdRunner"
+                  />
+                  <p v-if="thirdRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+              <v-col cols="6">
+                <p style="color: #EC407A">得点</p>
+                <draggable v-model="homeRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(homeRunner) in homeRunners"
+                    :key="homeRunner.id"
+                    :player="homeRunner"
+                  />
+                  <p v-if="homeRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="6">
+                <p style="color: #42A5F5">アウト</p>
+                <draggable v-model="outRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(outRunner) in outRunners"
+                    :key="outRunner.id"
+                    :player="outRunner"
+                  />
+                  <p v-if="outRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <div
+              v-if="!(atBat.result === 4 ||
+              atBat.result === 5 ||
+              atBat.result === 9 ||
+              atBat.result === 10 ||
+              atBat.result === 13 ||
+              atBat.result === 14)"
+            >
+              <p class="mt-2">打球方向を選択してください</p>
+              <hit-direction-selector
+                class="mt-5"
+                :direction="atBat.direction"
+                @change-direction="atBat.direction=$event"
+              />
+            </div>
+            <v-text-field
+              v-model="atBat.comment"
+              :error-messages="commentErrors"
+              :counter="200"
+              outlined
+              label="コメント"
+              class="mt-3"
+              @input="$v.atBat.comment.$touch()"
+              @blur="$v.atBat.comment.$touch()"
+            ></v-text-field>
+            <p class="text-center" style="color: #FF4081">{{ directionErrorMessage }}</p>
+            <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
+            <v-row justify="center">
+              <v-btn
+                class="mr-4 mb-4"
+                color="primary"
+                @click="saveResult()"
+              >
+                確定
+              </v-btn>
+              <v-btn
+                class="mb-4"
+                @click="closeResultModal()"
+              >
+                戻る
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="isOpenRbiAndEernedModal"
+        max-width="640"
+        fullscreen
+      >
+        <v-card>
+          <v-container>
+            <div>
+              <p class="mt-2">得点の自責点、打点を設定してください</p>
+              <div
+                v-for="homeRunner in homeRunners"
+                :key="homeRunner.id"
+              >
+                <div class="d-flex">
+                  <v-list-item-avatar>
+                    <v-img :src="homeRunner.image ? homeRunner.image : '../noimage.png'"></v-img>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    <v-list-item-title v-text="homeRunner.name" style="margin-left: 5px"></v-list-item-title>
+                  </v-list-item-content>
+                  <v-checkbox
+                    v-model="homeRunner.earnedFlg"
+                    :label="'自責点'"
+                    class="mr-4 ml-2"
+                  ></v-checkbox>
+                  <v-checkbox
+                    v-model="homeRunner.rbiFlg"
+                    :label="'打点'"
+                    class="mr-4"
+                  ></v-checkbox>
+                </div>
+              </div>
+            </div>
+            <v-row justify="center">
+              <v-btn
+                class="mt-8 mb-4"
+                color="primary"
+                @click="saveResult()"
+              >
+                確定
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="isOpenStealModal"
+        max-width="640"
+        fullscreen
+        ref="steal_modal"
+      >
+        <v-card>
+          <v-container>
+            <p class="mt-2">盗塁状況を入力してください</p>
+            <div class="d-flex" v-if="firstRunner !== null">
+              一塁
+              <v-list-item-avatar>
+                <v-img :src="firstRunner.image ? firstRunner.image : '../noimage.png'"></v-img>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title v-text="firstRunner.name" style="margin-left: 5px"></v-list-item-title>
+              </v-list-item-content>
+              <v-radio-group v-model="firstRunner.successFlg">
+                <v-radio
+                  :label="`成功`"
+                  :value="'true'"
+                ></v-radio>
+                <v-radio
+                  :label="`失敗`"
+                  :value="'false'"
+                ></v-radio>
+                <v-radio 
+                  :label="`企図なし`"
+                  :value="'null'"
+                ></v-radio>
+              </v-radio-group>
+            </div>
+            <div class="d-flex" v-if="secondRunner !== null">
+              二塁
+              <v-list-item-avatar>
+                <v-img :src="secondRunner.image ? secondRunner.image : '../noimage.png'"></v-img>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title v-text="secondRunner.name" style="margin-left: 5px"></v-list-item-title>
+              </v-list-item-content>
+              <v-radio-group v-model="secondRunner.successFlg">
+                <v-radio
+                  :label="`成功`"
+                  :value="'true'"
+                ></v-radio>
+                <v-radio
+                  :label="`失敗`"
+                  :value="'false'"
+                ></v-radio>
+                <v-radio 
+                  :label="`企図なし`"
+                  :value="'null'"
+                ></v-radio>
+              </v-radio-group>
+            </div>
+            <div class="d-flex" v-if="thirdRunner !== null">
+              三塁
+              <v-list-item-avatar>
+                <v-img :src="thirdRunner.image ? thirdRunner.image : '../noimage.png'"></v-img>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title v-text="thirdRunner.name" style="margin-left: 5px"></v-list-item-title>
+              </v-list-item-content>
+              <v-radio-group v-model="thirdRunner.successFlg">
+                <v-radio
+                  :label="`成功`"
+                  :value="'true'"
+                ></v-radio>
+                <v-radio
+                  :label="`失敗`"
+                  :value="'false'"
+                ></v-radio>
+                <v-radio 
+                  :label="`企図なし`"
+                  :value="'null'"
+                ></v-radio>
+              </v-radio-group>
+            </div>
+            <v-text-field
+              v-model="event.comment"
+              :error-messages="eventCommentErrors"
+              :counter="200"
+              outlined
+              label="コメント"
+              class="mt-3"
+              @input="$v.event.comment.$touch()"
+              @blur="$v.event.comment.$touch()"
+            ></v-text-field>
+            <p class="text-center" style="color: #FF4081">{{ stealErrorMessage }}</p>
+            <v-row justify="center">
+              <v-btn
+                class="mr-4 mb-4"
+                color="primary"
+                @click="saveSteal()"
+              >
+                確定
+              </v-btn>
+              <v-btn
+                class="mb-4"
+                @click="closeStealModal()"
+              >
+                戻る
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="isOpenEernedModal"
+        max-width="640"
+        fullscreen
+      >
+        <v-card>
+          <v-container>
+            <div>
+              <p class="mt-2">得点の自責点を設定してください</p>
+              <div class="d-flex" v-if="thirdRunner !== null">
+                <v-list-item-avatar>
+                  <v-img :src="thirdRunner.image ? thirdRunner.image : '../noimage.png'"></v-img>
+                </v-list-item-avatar>
+                <v-list-item-content>
+                  <v-list-item-title v-text="thirdRunner.name" style="margin-left: 5px"></v-list-item-title>
+                </v-list-item-content>
+                <v-checkbox
+                  v-model="thirdRunner.earnedFlg"
+                  :label="'自責点'"
+                  class="mr-4 ml-2"
+                ></v-checkbox>
+              </div>
+            </div>
+            <v-row justify="center">
+              <v-btn
+                class="mt-8 mb-4"
+                color="primary"
+                @click="saveSteal()"
+              >
+                確定
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="isOpenErrorModal"
+        max-width="640"
+        fullscreen
+        ref="error_modal"
+      >
+        <v-card>
+          <v-container>
+            <p class="mt-2">ランナー状況を入力してください</p>
+            <v-row justify="center">
+              <v-col cols="6">
+                <p>一塁</p>
+                <draggable v-model="firstRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(firstRunner) in firstRunners"
+                    :key="firstRunner.id"
+                    :player="firstRunner"
+                  />
+                  <p v-if="firstRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+              <v-col cols="6">
+                <p>二塁</p>
+                <draggable v-model="secondRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(secondRunner) in secondRunners"
+                    :key="secondRunner.id"
+                    :player="secondRunner"
+                  />
+                  <p v-if="secondRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <v-row justify="center">
+              <v-col cols="6">
+                <p>三塁</p>
+                <draggable v-model="thirdRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(thirdRunner) in thirdRunners"
+                    :key="thirdRunner.id"
+                    :player="thirdRunner"
+                  />
+                  <p v-if="thirdRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+              <v-col cols="6">
+                <p style="color: #EC407A">得点</p>
+                <draggable v-model="homeRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(homeRunner) in homeRunners"
+                    :key="homeRunner.id"
+                    :player="homeRunner"
+                  />
+                  <p v-if="homeRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="6">
+                <p style="color: #42A5F5">アウト</p>
+                <draggable v-model="outRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(outRunner) in outRunners"
+                    :key="outRunner.id"
+                    :player="outRunner"
+                  />
+                  <p v-if="outRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <p class="mt-2">エラーのあった守備位置を選択してください</p>
+            <hit-direction-selector
+              class="mt-5"
+              :direction="atBat.direction"
+              @change-direction="atBat.direction=$event"
+            />
+            <v-text-field
+              v-model="event.comment"
+              :error-messages="eventCommentErrors"
+              :counter="200"
+              outlined
+              label="コメント"
+              class="mt-3"
+              @input="$v.event.comment.$touch()"
+              @blur="$v.event.comment.$touch()"
+            ></v-text-field>
+            <p class="text-center" style="color: #FF4081">{{ directionErrorMessage }}</p>
+            <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
+            <v-row justify="center">
+              <v-btn
+                class="mr-4 mb-4"
+                color="primary"
+                @click="saveError()"
+              >
+                確定
+              </v-btn>
+              <v-btn
+                class="mb-4"
+                @click="closeErrorModal()"
+              >
+                戻る
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="isOpenEernedForErrorModal"
+        max-width="640"
+        fullscreen
+      >
+        <v-card>
+          <v-container>
+            <div>
+              <p class="mt-2">得点の自責点を設定してください</p>
+              <div
+                v-for="homeRunner in homeRunners"
+                :key="homeRunner.id"
+              >
+                <div class="d-flex">
+                  <v-list-item-avatar>
+                    <v-img :src="homeRunner.image ? homeRunner.image : '../noimage.png'"></v-img>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    <v-list-item-title v-text="homeRunner.name" style="margin-left: 5px"></v-list-item-title>
+                  </v-list-item-content>
+                  <v-checkbox
+                    v-model="homeRunner.earnedFlg"
+                    :label="'自責点'"
+                    class="mr-4 ml-2"
+                  ></v-checkbox>
+                </div>
+              </div>
+            </div>
+            <v-row justify="center">
+              <v-btn
+                class="mt-8 mb-4"
+                color="primary"
+                @click="saveError()"
+              >
+                確定
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="isOpenBatteryErrorModal"
+        max-width="640"
+        fullscreen
+        ref="battery_error_modal"
+      >
+        <v-card>
+          <v-container>
+            <p class="mt-2">ランナー状況を入力してください</p>
+            <v-row justify="center">
+              <v-col cols="6">
+                <p>一塁</p>
+                <draggable v-model="firstRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(firstRunner) in firstRunners"
+                    :key="firstRunner.id"
+                    :player="firstRunner"
+                  />
+                  <p v-if="firstRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+              <v-col cols="6">
+                <p>二塁</p>
+                <draggable v-model="secondRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(secondRunner) in secondRunners"
+                    :key="secondRunner.id"
+                    :player="secondRunner"
+                  />
+                  <p v-if="secondRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <v-row justify="center">
+              <v-col cols="6">
+                <p>三塁</p>
+                <draggable v-model="thirdRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(thirdRunner) in thirdRunners"
+                    :key="thirdRunner.id"
+                    :player="thirdRunner"
+                  />
+                  <p v-if="thirdRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+              <v-col cols="6">
+                <p style="color: #EC407A">得点</p>
+                <draggable v-model="homeRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(homeRunner) in homeRunners"
+                    :key="homeRunner.id"
+                    :player="homeRunner"
+                  />
+                  <p v-if="homeRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="6">
+                <p style="color: #42A5F5">アウト</p>
+                <draggable v-model="outRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(outRunner) in outRunners"
+                    :key="outRunner.id"
+                    :player="outRunner"
+                  />
+                  <p v-if="outRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <v-text-field
+              v-model="event.comment"
+              :error-messages="eventCommentErrors"
+              :counter="200"
+              outlined
+              label="コメント"
+              class="mt-3"
+              @input="$v.event.comment.$touch()"
+              @blur="$v.event.comment.$touch()"
+            ></v-text-field>
+            <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
+            <v-row justify="center">
+              <v-btn
+                class="mr-4 mb-4"
+                color="primary"
+                @click="saveBatteryError()"
+              >
+                確定
+              </v-btn>
+              <v-btn
+                class="mb-4"
+                @click="closeBatteryErrorModal()"
+              >
+                戻る
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="isOpenEernedForBatteryErrorModal"
+        max-width="640"
+        fullscreen
+      >
+        <v-card>
+          <v-container>
+            <div>
+              <p class="mt-2">得点の自責点を設定してください</p>
+              <div
+                v-for="homeRunner in homeRunners"
+                :key="homeRunner.id"
+              >
+                <div class="d-flex">
+                  <v-list-item-avatar>
+                    <v-img :src="homeRunner.image ? homeRunner.image : '../noimage.png'"></v-img>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    <v-list-item-title v-text="homeRunner.name" style="margin-left: 5px"></v-list-item-title>
+                  </v-list-item-content>
+                  <v-checkbox
+                    v-model="homeRunner.earnedFlg"
+                    :label="'自責点'"
+                    class="mr-4 ml-2"
+                  ></v-checkbox>
+                </div>
+              </div>
+            </div>
+            <v-row justify="center">
+              <v-btn
+                class="mt-8 mb-4"
+                color="primary"
+                @click="saveBatteryError()"
+              >
+                確定
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="isOpenSpecialModal"
+        max-width="640"
+        fullscreen
+        ref="special_modal"
+      >
+        <v-card>
+          <v-container>
+            <p class="mt-2">ランナー状況を入力してください</p>
+            <v-row justify="center">
+              <v-col cols="6">
+                <p>一塁</p>
+                <draggable v-model="firstRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(firstRunner) in firstRunners"
+                    :key="firstRunner.id"
+                    :player="firstRunner"
+                  />
+                  <p v-if="firstRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+              <v-col cols="6">
+                <p>二塁</p>
+                <draggable v-model="secondRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(secondRunner) in secondRunners"
+                    :key="secondRunner.id"
+                    :player="secondRunner"
+                  />
+                  <p v-if="secondRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <v-row justify="center">
+              <v-col cols="6">
+                <p>三塁</p>
+                <draggable v-model="thirdRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(thirdRunner) in thirdRunners"
+                    :key="thirdRunner.id"
+                    :player="thirdRunner"
+                  />
+                  <p v-if="thirdRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+              <v-col cols="6">
+                <p style="color: #EC407A">得点</p>
+                <draggable v-model="homeRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(homeRunner) in homeRunners"
+                    :key="homeRunner.id"
+                    :player="homeRunner"
+                  />
+                  <p v-if="homeRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="6">
+                <p style="color: #42A5F5">アウト</p>
+                <draggable v-model="outRunners" group="runners" :animation="300" :delay="50" style="padding:5px 0">
+                  <runner-list
+                    v-for="(outRunner) in outRunners"
+                    :key="outRunner.id"
+                    :player="outRunner"
+                  />
+                  <p v-if="outRunners.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
+                </draggable>
+              </v-col>
+            </v-row>
+            <v-text-field
+              v-model="event.comment"
+              :error-messages="eventCommentErrors"
+              :counter="200"
+              outlined
+              label="コメント"
+              class="mt-3"
+              @input="$v.event.comment.$touch()"
+              @blur="$v.event.comment.$touch()"
+            ></v-text-field>
+            <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
+            <v-row justify="center">
+              <v-btn
+                class="mr-4 mb-4"
+                color="primary"
+                @click="saveSpecial()"
+              >
+                確定
+              </v-btn>
+              <v-btn
+                class="mb-4"
+                @click="closeSpecialModal()"
+              >
+                戻る
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+      <v-dialog
+        v-model="isOpenEernedForSpecialModal"
+        max-width="640"
+        fullscreen
+      >
+        <v-card>
+          <v-container>
+            <div>
+              <p class="mt-2">得点の自責点を設定してください</p>
+              <div
+                v-for="homeRunner in homeRunners"
+                :key="homeRunner.id"
+              >
+                <div class="d-flex">
+                  <v-list-item-avatar>
+                    <v-img :src="homeRunner.image ? homeRunner.image : '../noimage.png'"></v-img>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    <v-list-item-title v-text="homeRunner.name" style="margin-left: 5px"></v-list-item-title>
+                  </v-list-item-content>
+                  <v-checkbox
+                    v-model="homeRunner.earnedFlg"
+                    :label="'自責点'"
+                    class="mr-4 ml-2"
+                  ></v-checkbox>
+                </div>
+              </div>
+            </div>
+            <v-row justify="center">
+              <v-btn
+                class="mt-8 mb-4"
+                color="primary"
+                @click="saveSpecial()"
+              >
+                確定
+              </v-btn>
+            </v-row>
+          </v-container>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="isOpenEndModal" max-width="640">
+        <v-card class="px-6 py-8">
+          <v-card-text>VS 「{{ game.opponentTeam  }}」を終了します。一度終了した試合は編集できません。<br>本当に終了しますか？</v-card-text>
+          <v-row justify="center">
+            <v-btn color="pink lighten-2" @click="openResponsiblePitcherModal()" class="mr-4 mt-4 white--text">終了</v-btn>
+            <v-btn @click="isOpenEndModal = false" class="mt-4">やめる</v-btn>
+          </v-row>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="isOpenDeleteAtBatModal" max-width="640">
+        <v-card class="px-6 py-8">
+          <v-card-text>ひとつ前の打者に戻ります。<br>入力していた盗塁、得点、失策等の情報はリセットされます<br>本当に戻りますか？</v-card-text>
+          <v-row justify="center">
+            <v-btn color="pink lighten-2" @click="deleteAtBat()" class="mr-4 mt-4 white--text">前の打者へ</v-btn>
+            <v-btn @click="isOpenDeleteAtBatModal = false" class="mt-4">やめる</v-btn>
+          </v-row>
+        </v-card>
+      </v-dialog>
       <v-dialog
         v-model="isOpenResponsiblePitcherModal"
         max-width="640"
@@ -1322,7 +1333,11 @@ export default {
       isOpenEndModal: false,
       isOpenDeleteAtBatModal: false,
       isOpenResponsiblePitcherModal: false,
-      score: null
+      isGameEdit: true,
+      isGameProcess: false,
+      isGameStats: false,
+      score: null,
+      processes: []
     }
   },
   created() {
@@ -1467,7 +1482,6 @@ export default {
 
       // スコア情報の取得
       this.score = await this.fetchScore()
-      console.log(this.score)
     }
   },
   computed: {
@@ -3220,6 +3234,29 @@ export default {
     async fetchScore() {
       try {
         return await GameApi.getScore(this.game.id) 
+      } catch(error) {
+        console.log(error)
+      }
+    },
+    editGame() {
+      this.isGameEdit = true
+      this.isGameProcess = false
+      this.isGameStats = false
+    },
+    async showProcess() {
+      this.isGameEdit = false
+      this.isGameProcess = true
+      this.isGameStats = false
+      await this.fetchProcesses()
+    },
+    showStats() {
+      this.isGameEdit = false
+      this.isGameProcess = false
+      this.isGameStats = true
+    },
+    async fetchProcesses() {
+      try {
+        this.processes = await GameApi.getProcess(this.game.id) 
       } catch(error) {
         console.log(error)
       }
