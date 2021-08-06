@@ -319,7 +319,7 @@
                 <v-btn
                   color="brown darken-1"
                   class="white--text"
-                  @click="openPlayerChangeModal()"
+                  @click="openFieldPlayerChangeModal()"
                 >
                   <span>交代</span>
                 </v-btn>
@@ -395,7 +395,7 @@
           </div>
           <div v-else-if="isGameStats">
             <v-list-item-subtitle class="px-2 pt-2">打者</v-list-item-subtitle>
-            <v-col style="padding: 0 0px; width: 100%;">
+            <v-col style="padding: 0 0px; width: 100%;" class="pb-5">
               <v-simple-table dense fixed-header style="padding: 0 0px; border-radius: 0px;">
                 <thead>
                   <tr class="text-center">
@@ -436,6 +436,220 @@
           </div>   
         </div>       
       </div>  
+      <div v-else-if="game.resultFlg">
+        <v-tabs grow dark style="height: 40px;" class="mt-3 black">
+          <v-tab @click="showResult()" class="black">試合結果</v-tab>
+          <v-tab @click="showProcess()" class="black">試合経過</v-tab>
+          <v-tab @click="showStats()" class="black">選手成績</v-tab>
+        </v-tabs>
+        <v-row v-if="score !== null" class="mt-2" style="width: 100%; margin: auto 0;">
+          <v-col style="padding: 0 0px; width: 10%;">
+            <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;" class="black">
+                <thead>
+                  <tr>
+                    <th class="text-left">
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                      {{ game.topFlg ? team.name : game.opponentTeam }}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                      {{ !game.topFlg ? team.name : game.opponentTeam }}
+                    </td>
+                  </tr>
+                </tbody>
+            </v-simple-table>
+          </v-col>
+          <v-col style="padding: 0 0px; width: 80%;">
+            <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;" class="black">
+              <thead>
+                <tr>
+                  <th
+                    v-for="topScore, idx in score.runs.topScores"
+                    :key="idx"
+                    class="text-center"
+                  >
+                    {{ idx + 1 }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td
+                    v-for="topScore, idx in score.runs.topScores"
+                    :key="idx"
+                    class="text-center"
+                  >
+                    {{ score.runs.topScores[idx] !== null ? score.runs.topScores[idx].score : 0 }}
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    v-for="topScore, idx in score.runs.topScores"
+                    :key="idx"
+                    class="text-center"
+                  >
+                    {{ score.runs.bottomScores[idx] !== null ? score.runs.bottomScores[idx].score : 0 }}
+                  </td>
+                </tr>
+              </tbody>
+            </v-simple-table>
+          </v-col>
+          <v-col style="padding: 0 0px; width: 10%;">
+            <v-simple-table dark dense style="padding: 0 0px; border-radius: 0px;" class="black">
+                <thead>
+                  <tr class="text-center">
+                    <th class="text-center">R</th>
+                    <th class="text-center">H</th>
+                    <th class="text-center">E</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="text-center">
+                    <td>{{ score.runs.topScore }}</td>
+                    <td>{{ score.topHit }}</td>
+                    <td>{{ score.topError }}</td>
+                  </tr>
+                  <tr class="text-center">
+                    <td>{{ score.runs.bottomScore }}</td>
+                    <td>{{ score.bottomHit }}</td>
+                    <td>{{ score.bottomError }}</td>
+                  </tr>
+                </tbody>
+            </v-simple-table>
+          </v-col>
+        </v-row>
+        <div v-if="isGameResult">
+          <v-list-item-content class="ml-10">
+            <v-list-item-title>VS {{ game.opponentTeam }}</v-list-item-title>
+            <v-list-item-subtitle>日付: {{ game.date }}</v-list-item-subtitle>
+            <v-list-item-subtitle>場所: {{ game.field }}</v-list-item-subtitle>
+          </v-list-item-content>
+          <div class="d-flex" style="justify-content: center;">
+            <p
+              class="text-h3 mr-3"
+            >
+              {{ game.topScore }} - {{ game.bottomScore }}
+            </p>
+            <p
+              class="text-h3"
+              :style="styleResult(game.result)"
+              style="font-weight: normal;"
+            >
+              {{ formatResult(game.result) }}
+            </p>
+          </div>
+          <v-simple-table style="padding: 0 0px; border-radius: 0px;" class="mt-5 mx-5">
+            <tbody>
+              <tr class="text-center">
+                <th style="width: 60px;">勝</th>
+                <td>{{ resultWinningPitcher }}</td>
+              </tr>
+              <tr class="text-center">
+                <th style="width: 60px;">負</th>
+                <td>{{ resultLosingPitcher }}</td>
+              </tr>
+               <tr class="text-center">
+                <th style="width: 60px;">S</th>
+                <td>{{ resultSavePitcher }}</td>
+              </tr>
+            </tbody>
+          </v-simple-table>
+          <v-simple-table style="padding: 0 0px; border-radius: 0px;" class="mx-5">
+            <tbody>
+              <tr class="text-center">
+                <th style="width: 60px;">本</th>
+                <td v-for="resultHomerun, idx in resultHomeruns" :key="idx">{{ resultHomerun }}</td>
+              </tr>
+            </tbody>
+          </v-simple-table>
+        </div>
+        <div v-else-if="isGameProcess">
+          <div v-for="process,idx in processes" :key="idx">
+              <v-subheader class="grey darken-4 white--text">{{ process.inningInfo }}</v-subheader>
+              <div v-for="batterProcess, idx in process.batterProcesses" :key="idx">
+                <v-list-item-content class="grey darken-1 white--text px-2">{{ batterProcess.batter }}</v-list-item-content>
+                <div v-if="batterProcess.beforeBattingEvents.length !== 0" class="px-2 pt-2">
+                  <div class="grey lighten-2 rounded-lg px-5 py-2">
+                    <div v-for="beforeBattingEvent, idx in batterProcess.beforeBattingEvents" :key="idx">
+                      <v-list-item-subtitle class="event">{{ beforeBattingEvent }}</v-list-item-subtitle>
+                    </div>
+                  </div>
+                </div>
+                <div class="px-2 py-2">
+                  <v-list-item-subtitle style="font-weight: 600;">{{ batterProcess.battingResult }}</v-list-item-subtitle>
+                </div>
+                <div v-if="batterProcess.afterBattingEvents.length !== 0" class="px-2 pb-2">
+                  <div class="grey lighten-2 rounded-lg px-5 py-2">
+                    <div v-for="afterBattingEvent, idx in batterProcess.afterBattingEvents" :key="idx">
+                      <v-list-item-subtitle class="event">{{ afterBattingEvent }}</v-list-item-subtitle>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+          <v-fab-transition>
+              <v-btn
+                color="#039BE5"
+                fab
+                dark
+                small
+                bottom
+                right
+                fixed
+                @click="$vuetify.goTo(0)"
+              >
+                <v-icon>mdi-apple-keyboard-control</v-icon>
+              </v-btn>
+            </v-fab-transition>
+        </div>
+        <div v-else-if="isGameStats">
+          <v-list-item-subtitle class="px-2 pt-2">打者</v-list-item-subtitle>
+          <v-col style="padding: 0 0px; width: 100%;" class="pb-5">
+            <v-simple-table dense fixed-header style="padding: 0 0px; border-radius: 0px;">
+              <thead>
+                <tr class="text-center">
+                  <th class="text-center">選手</th>
+                  <th class="text-center">打席</th>
+                  <th class="text-center">打数</th>
+                  <th class="text-center">一</th>
+                  <th class="text-center">二</th>
+                  <th class="text-center">三</th>
+                  <th class="text-center">本</th>
+                  <th class="text-center">犠</th>
+                  <th class="text-center">振</th>
+                  <th class="text-center">四死</th>
+                  <th class="text-center">打点</th>
+                  <th class="text-center">得点</th>
+                  <th class="text-center">盗</th>
+                </tr>
+              </thead>
+              <tbody>
+                  <tr v-for="stat, idx in stats" :key="idx" class="text-center">
+                    <td>{{ stat.name }}</td>
+                    <td>{{ stat.appear }}</td>
+                    <td>{{ stat.batting }}</td>
+                    <td>{{ stat.hit }}</td>
+                    <td>{{ stat.two }}</td>
+                    <td>{{ stat.three }}</td>
+                    <td>{{ stat.hr }}</td>
+                    <td>{{ stat.sac }}</td>
+                    <td>{{ stat.k }}</td>
+                    <td>{{ stat.bb }}</td>
+                    <td>{{ stat.rbi }}</td>
+                    <td>{{ stat.score }}</td>
+                    <td>{{ stat.steal }}</td>
+                  </tr>
+              </tbody>
+            </v-simple-table>
+          </v-col>
+        </div>   
+      </div> 
 
 
 
@@ -1257,24 +1471,24 @@
         </v-card>
       </v-dialog>
       <v-dialog
-        v-model="isOpenPlayerChangeModal"
+        v-model="isOpenFieldPlayerChangeModal"
         max-width="640"
         fullscreen
-        ref="player_change_modal"
+        ref="field_change_modal"
       >
         <v-card>
           <v-container>
             <p class="mt-2">選手交代を設定してください</p>
-            <v-row justify="center">
+            <v-row justify="center" class="py-3">
               <v-col cols="5">
                 <p>選手一覧</p>
-                <draggable v-model="players" group="starters" :animation="300" :delay="50"
+                <draggable v-model="nowReserves" group="starters" :animation="300" :delay="50"
                   style="padding:5px 0; height: 550px; overflow-y: scroll;"
                 >
                   <lineup-list
-                    v-for="player in players"
-                    :key="player.id"
-                    :player="player"
+                    v-for="nowReserve in nowReserves"
+                    :key="nowReserve.id"
+                    :player="nowReserve"
                   />
                 </draggable>
               </v-col>
@@ -1289,7 +1503,6 @@
                         :player="player"
                         :number="idx + 1"
                       />
-                      <p v-if="starters.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
                     </draggable>
                   </v-col>
                   <v-col cols="3">
@@ -1304,18 +1517,19 @@
                 </v-row>
               </v-col>
             </v-row>
-            <p class="text-center" style="color: #FF4081">{{ runnerErrorMessage }}</p>
+            <p v-if="!validateFieldPlayerChanges" class="text-center" style="color: #FF4081">選手交代前と交代後で出場選手数が違います。</p>
+            <p v-if="playerChangeErrorMessage" class="text-center" style="color: #FF4081">{{ playerChangeErrorMessage }}</p>
             <v-row justify="center" class="pt-4">
               <v-btn
                 class="mr-4 mb-4"
                 color="primary"
-                @click="savePlayerChange()"
+                @click="saveFieldPlayerChange()"
               >
                 確定
               </v-btn>
               <v-btn
                 class="mb-4"
-                @click="closePlayerChangeModal()"
+                @click="closeFieldPlayerChangeModal()"
               >
                 戻る
               </v-btn>
@@ -1331,6 +1545,7 @@ import { validationMixin } from 'vuelidate'
 import { maxLength } from 'vuelidate/lib/validators'
 import GameApi from '@/plugins/axios/modules/game'
 import PlayerApi from '@/plugins/axios/modules/player'
+import PlayerChangeApi from '@/plugins/axios/modules/playerChange'
 import TeamApi from '@/plugins/axios/modules/team'
 import AtBatApi from '@/plugins/axios/modules/atBat'
 import RunApi from '@/plugins/axios/modules/run'
@@ -1433,6 +1648,7 @@ export default {
       error: {},
       runOuts: [],
       runs: [],
+      playerChanges: [],
       batteryError: null,
       firstRunner: null,
       secondRunner: null,
@@ -1455,6 +1671,7 @@ export default {
       directionErrorMessage: '',
       runnerErrorMessage: '',
       stealErrorMessage: '',
+      playerChangeErrorMessage: '',
       isDeleted: false,
       isStarted: false,
       isOpenResultModal: false,
@@ -1473,24 +1690,36 @@ export default {
       isGameEdit: true,
       isGameProcess: false,
       isGameStats: false,
-      isOpenPlayerChangeModal: false,
+      isGameResult: true,
+      isOpenFieldPlayerChangeModal: false,
+      isOpenBattingPlayerChangeModal: false,
       score: null,
       processes: [],
       stats: [],
       nowPlayers: [],
-      nowField: []
+      nowFields: [],
+      nowReserves: [],
+      playerChanges: [],
+      resultWinningPitcher: null,
+      resultLosingPitcher: null,
+      resultSavePitcher: null,
+      resultHomeruns: []
     }
   },
-  created() {
+  async created() {
     this.game.id = Number(this.$route.params.gameId)
-    this.fetchGame()
-    PlayerApi.getPlayers(this.game.id)
-    .then((res) => {
+    await this.fetchGame()
+    await PlayerApi.getPlayers(this.game.id)
+    .then(async (res) => {
       this.players = res
       this.addMobPlayers()
-      this.fetchAtBats()
+      await this.fetchAtBats()
     })
     this.fetchTeam()
+
+    if (this.game.resultFlg) {
+      this.getResult()
+    }
   },
  watch: {
     players: function() {
@@ -1504,6 +1733,7 @@ export default {
       }
     },
     atBats: async function() {
+      this.game = await this.getGame()
       if (this.game.lineupingStatus === 0) {
         return
       }
@@ -1558,6 +1788,9 @@ export default {
           if (event.eventType === 3) {
             await this.fetchSpecial(id)
           }
+          if (event.eventType === 4) {
+            await this.fetchPlayerChanges(id)
+          }
           await this.fetchRuns(id)
           await this.fetchRunOuts(id)
           
@@ -1568,9 +1801,13 @@ export default {
             runs: this.runs,
             batteryError: this.batteryError,
             error: this.error,
-            special: this.special
+            special: this.special,
+            playerChanges: this.playerChanges
           })
         }
+
+        // スコア情報の取得
+        this.score = await this.fetchScore()
 
       } else {
         // バッター情報
@@ -1620,9 +1857,6 @@ export default {
           console.log(error)
         })
       }
-
-      // スコア情報の取得
-      this.score = await this.fetchScore()
     }
   },
   computed: {
@@ -1643,6 +1877,13 @@ export default {
       if (!this.$v.game.comment.$dirty) return errors
       !this.$v.game.comment.maxLength && errors.push('戦評は1000文字以内です。')
       return errors
+    },
+    validateFieldPlayerChanges () {
+      if (this.nowPlayers.length === this.beforeChangePlayersNumber) {
+        return true
+      } else {
+        return false
+      }
     }
   },
   methods: {
@@ -1678,8 +1919,8 @@ export default {
       }
       return lineup
     },
-    fetchGame() {
-      GameApi.getGame(this.game.id)
+    async fetchGame() {
+      await GameApi.getGame(this.game.id)
       .then((res) => {
         this.game = res
       })
@@ -1730,8 +1971,8 @@ export default {
         { 'id': 1006, 'name': 'mob7', 'image': null },  { 'id': 1007, 'name': 'mob8', 'image': null }, { 'id': 1008, 'name': 'mob9', 'image': null },
       )
     },
-    fetchAtBats() {
-      AtBatApi.getAtBatsByGameId(this.game.id)
+    async fetchAtBats() {
+      await AtBatApi.getAtBatsByGameId(this.game.id)
       .then((res) => {
         this.isStarted = true
         this.atBats = res
@@ -3266,6 +3507,17 @@ export default {
         }
       }
     },
+    async fetchPlayerChanges(eventId) {
+      try {
+       this.playerChanges = await PlayerChangeApi.getPlayerChangesByEventId(eventId)
+      } catch (error) {
+        if (error.status === 404) {
+          this.playerChanges = []
+        } else {
+          console.log(error)
+        }
+      }
+    },
     async fetchEvents(atBatId) {
       try {
         this.events = await EventApi.getEventsByAtBatId(atBatId)
@@ -3386,15 +3638,22 @@ export default {
     },
     async showProcess() {
       this.isGameEdit = false
+      this.isGameResult = false
       this.isGameProcess = true
       this.isGameStats = false
       await this.fetchProcesses()
     },
     async showStats() {
       this.isGameEdit = false
+      this.isGameResult = false
       this.isGameProcess = false
       this.isGameStats = true
       await this.fetchStats()
+    },
+    showResult() {
+      this.isGameResult = true
+      this.isGameProcess = false
+      this.isGameStats = false
     },
     async fetchProcesses() {
       try {
@@ -3410,24 +3669,254 @@ export default {
         console.log(error)
       }
     },
-    openPlayerChangeModal() {
-      const game = this.getGame()
+    async openFieldPlayerChangeModal() {
+      this.nowPlayers = []
+      this.nowFields = []
+      this.nowReserves = []
+      const game = await this.getGame()
       const lineups = game.topFlg ? game.topLineup : game.bottomLineup
+      let nowPlayerIds = []
       lineups.filter((lineup) => {
-        lineup.orderDetails[]
-        //saigonoyatuwotoru
+        nowPlayerIds.push(lineup.orderDetails.slice(-1)[0].playerId)        
+        this.nowFields.push(lineup.orderDetails.slice(-1)[0].fieldNumber)        
       })
-      this.isOpenPlayerChangeModal = true
+
+      nowPlayerIds.filter((nowPlayerId) => {
+        this.players.filter((player) => {
+          if (player.id === nowPlayerId) {
+            this.nowPlayers.push(player)
+          }
+        })
+      })
+
+      this.players.filter((player) => {
+        if (!nowPlayerIds.includes(player.id)) {
+          this.nowReserves.push(player)
+        }
+      })
+
+      this.beforeChangePlayersNumber = this.nowPlayers.length //　出場選手数の把握
+      this.isOpenFieldPlayerChangeModal = true
     },
-    closePlayerChangeModal() {
-      this.isOpenPlayerChangeModal = false
-      this.$refs.player_change_modal.scrollTop = 0;
+    closeFieldPlayerChangeModal() {
+      this.isOpenFieldPlayerChangeModal = false
+      this.playerChangeErrorMessage = ''
+      this.$refs.field_change_modal.scrollTop = 0;
     },
     async getGame() {
       try {
         return await GameApi.getGame(this.game.id)
       } catch (error) {
         console.log(error)
+      }
+    },
+    async saveFieldPlayerChange() {
+      if (!this.validateFieldPlayerChanges) {
+        return
+      }
+      this.playerChangeErrorMessage = ''
+      try {
+        const game = await this.getGame()
+        const lineup = game.topFlg ? game.topLineup : game.bottomLineup
+        let newLineup = [...lineup]
+        for (let i = 0; i < lineup.length; i++) {
+          newLineup[i].orderDetails.push({
+            'playerId' : this.nowPlayers[i].id,
+            'fieldNumber' : this.nowFields[i]
+          })
+        }
+        if (this.game.topFlg) {
+          this.game.topLineup = newLineup
+        } else {
+          this.game.bottomLineup = newLineup
+        }
+
+        if (this.game.topFlg === this.atBat.topFlg) { // 攻撃中   
+          newLineup.filter((lineup) => {
+            if ((this.atBat.lineupNumber === lineup.orderNumber)
+              && (lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber === lineup.orderDetails.slice(-1)[0].fieldNumber)) { // 代打の場合
+              return
+            } else if ((this.atBat.firstRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId)
+              || (this.atBat.secondRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId)
+              || (this.atBat.thirdRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId)) { // 代走の場合
+              return
+            } else {
+              if (lineup.orderDetails.slice(-1)[0].playerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                && lineup.orderDetails.slice(-1)[0].fieldNumber === lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber) {
+                return
+              } else {
+              this.playerChangeErrorMessage = '不正な選手交代です。'
+              throw 'Invalid Player Change!';
+              }
+            }
+          })
+        }
+        let newEvent = {
+          id: null,
+          gameId: this.game.id,
+          teamId: this.game.teamId,
+          inning: this.atBat.inning,
+          atBatId: this.atBat.id,
+          resultFirstRunnerId: this.atBat.firstRunnerId,
+          resultSecondRunnerId: this.atBat.secondRunnerId,
+          resultThirdRunnerId: this.atBat.thirdRunnerId,
+          resultOutCount: this.atBat.outCount,
+          eventType: 4,
+          comment: null,
+          timing: 0 // 打撃前イベント
+        }
+
+        newLineup.filter((lineup) => {
+          if (this.game.topFlg === this.atBat.topFlg) { // 攻撃中
+            if (this.atBat.firstRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId) { // 一塁の代走
+              newEvent.resultFirstRunnerId = lineup.orderDetails.slice(-1)[0].playerId
+            } else if (this.atBat.secondRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId) { // 二塁の代走
+              newEvent.resultSecondRunnerId = lineup.orderDetails.slice(-1)[0].playerId
+            } else if (this.atBat.thirdRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId) { // 三塁の代走
+              newEvent.resulThirdRunnerId = lineup.orderDetails.slice(-1)[0].playerId
+            }
+          }
+        })
+
+        EventApi.registerEvent(newEvent)
+        .then((res) => {
+          newLineup.filter(async (lineup) => {
+            let playerChange = {}
+            playerChange.gameId = this.game.id
+            playerChange.teamId = this.game.teamId
+            playerChange.atBatId = this.atBat.id
+
+            if (this.game.topFlg === this.atBat.topFlg) { // 攻撃中
+              if ((this.atBat.lineupNumber === lineup.orderNumber)
+                && (lineup.orderDetails.slice(-1)[0].playerId !== lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId)) { // 代打の場合
+                playerChange.changeStatus = 2
+                playerChange.outPlayerId = lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                playerChange.inPlayerId = lineup.orderDetails.slice(-1)[0].playerId
+                playerChange.beforeField = lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber
+                playerChange.afterField = lineup.orderDetails.slice(-1)[0].fieldNumber
+                this.atBat.batterId = lineup.orderDetails.slice(-1)[0].playerId
+              } else if (this.atBat.firstRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                && this.atBat.firstRunnerId !== lineup.orderDetails.slice(-1)[0].playerId) { // 一塁の代走
+                playerChange.changeStatus = 3
+                playerChange.outPlayerId = lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                playerChange.inPlayerId = lineup.orderDetails.slice(-1)[0].playerId
+                playerChange.beforeField = lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber
+                playerChange.afterField = lineup.orderDetails.slice(-1)[0].fieldNumber
+              } else if (this.atBat.secondRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                && this.atBat.secondRunnerId !== lineup.orderDetails.slice(-1)[0].playerId) { // 二塁の代走
+                playerChange.changeStatus = 3
+                playerChange.outPlayerId = lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                playerChange.inPlayerId = lineup.orderDetails.slice(-1)[0].playerId
+                playerChange.beforeField = lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber
+                playerChange.afterField = lineup.orderDetails.slice(-1)[0].fieldNumber
+              } else if (this.atBat.thirdRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                && this.atBat.thirdRunnerId !== lineup.orderDetails.slice(-1)[0].playerId) { // 三塁の代走
+                playerChange.changeStatus = 3
+                playerChange.outPlayerId = lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                playerChange.inPlayerId = lineup.orderDetails.slice(-1)[0].playerId
+                playerChange.beforeField = lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber
+                playerChange.afterField = lineup.orderDetails.slice(-1)[0].fieldNumber
+              } else {
+                return
+              }
+            } else {
+              if (lineup.orderDetails.slice(-1)[0].playerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId) { // 選手交代なし
+                if (lineup.orderDetails.slice(-1)[0].fieldNumber === lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber) { // 守備変更なし
+                  return
+                } else if (lineup.orderDetails.slice(-1)[0].fieldNumber === 1) { // 守備変更あり投手
+                  playerChange.changeStatus = 0
+                  playerChange.outPlayerId = lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                  playerChange.inPlayerId = lineup.orderDetails.slice(-1)[0].playerId
+                  playerChange.beforeField = lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber
+                  playerChange.afterField = lineup.orderDetails.slice(-1)[0].fieldNumber
+                  this.atBat.pitcherId = lineup.orderDetails.slice(-1)[0].playerId
+                } else { //　守備変更あり投手以外
+                  playerChange.changeStatus = 1
+                  playerChange.outPlayerId = lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                  playerChange.inPlayerId = lineup.orderDetails.slice(-1)[0].playerId
+                  playerChange.beforeField = lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber
+                  playerChange.afterField = lineup.orderDetails.slice(-1)[0].fieldNumber
+                }
+              } else if (lineup.orderDetails.slice(-1)[0].fieldNumber === 1) { // 守備交代 選手交代あり　かつ　ピッチャー交代
+                playerChange.changeStatus = 0
+                playerChange.outPlayerId = lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                playerChange.inPlayerId = lineup.orderDetails.slice(-1)[0].playerId
+                playerChange.beforeField = lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber
+                playerChange.afterField = lineup.orderDetails.slice(-1)[0].fieldNumber
+                this.atBat.pitcherId = lineup.orderDetails.slice(-1)[0].playerId
+              } else { // 選手交代あり　かつ　ピッチャー以外の交代
+                playerChange.changeStatus = 1
+                playerChange.outPlayerId = lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+                playerChange.inPlayerId = lineup.orderDetails.slice(-1)[0].playerId
+                playerChange.beforeField = lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber
+                playerChange.afterField = lineup.orderDetails.slice(-1)[0].fieldNumber
+              }
+            }
+            playerChange.eventId = res.id
+            PlayerChangeApi.registerPlayerChange(playerChange)
+          })
+          GameApi.updateGame(this.game)
+          this.atBat.playerChangeFlg = true
+          this.atBat.firstRunnerId = newEvent.resultFirstRunnerId
+          this.atBat.secondRunnerId = newEvent.resultSecondRunnerId
+          this.atBat.thirdRunnerId = newEvent.resultThirdRunnerId
+          AtBatApi.updateAtBat(this.atBat)
+          .then(() => {
+            this.fetchAtBats()
+            this.isOpenFieldPlayerChangeModal = false
+          })
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    getResult() {
+      this.players.filter((player) => {
+        if (player.id === this.game.winningPitcher) {
+          this.resultWinningPitcher = player.name
+        }
+        if (player.id === this.game.losingPiticehr) {
+          this.resultLosingPitcher = player.name
+        }
+        if (player.id === this.game.savePitcher) {
+          this.resultSavePitcher = player.name
+        }
+      })
+
+      let resultHomerunIds = []
+      this.atBats.filter((atBat) => {
+        if (atBat.topFlg === this.game.topFlg) {
+          if (atBat.result === 3) {
+            resultHomerunIds.push(atBat.batterId)
+          }
+        }
+      })
+
+      this.players.filter((player) => {
+        if (resultHomerunIds.includes(player.id)) {
+          this.resultHomeruns.push(player.name)
+        }
+      })
+    },
+    formatResult(result) {
+      if (result === 0) {
+        return 'Win'
+      } else if (result === 1) {
+        return 'Lose'
+      } else {
+        return 'Draw'
+      }
+    },
+    styleResult(result) {
+      if (result === 0) {
+        return 'color: #D81B60'
+      } else if (result === 1) {
+        return 'color: #0D47A1'
+      } else {
+        return 'color: #C0CA33'
       }
     }
   }
