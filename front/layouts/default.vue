@@ -6,9 +6,9 @@
 
 <script>
 export default {
-  middleware({ store, redirect }) {
+  middleware({ store, redirect, $auth }) {
     if(store.$auth.loggedIn) {
-      redirect('/');
+      $auth.logout()
     }
   }
 }

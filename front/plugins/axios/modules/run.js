@@ -13,11 +13,16 @@ export default {
       runnerId: run.runnerId,
       inning: run.inning,
       earndFlg: run.earnedFlg,
-      rbiFlg: run.rbiFlg
+      rbiFlg: run.rbiFlg,
+      topFlg: run.topFlg
     })
   },
 
   getRunsByEventId(eventId) {
     return axios.$get(`games/runs/${eventId}`)
+  },
+
+  getRunsByGameId(gameId) {
+    return axios.$get(`games/result/runs/${gameId}`)
   }
 }

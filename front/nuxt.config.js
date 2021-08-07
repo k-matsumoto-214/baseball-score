@@ -40,7 +40,8 @@ export default {
     "@nuxtjs/axios",
     "@nuxtjs/auth",
     "@nuxtjs/proxy",
-    "@nuxtjs/vuetify"
+    "@nuxtjs/vuetify",
+    'cookie-universal-nuxt'
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
@@ -73,7 +74,7 @@ export default {
   proxy: {
     '/api/': {
       // ターゲット先のURLを指定
-      target: 'http://172.25.32.1:8081',
+      target: 'http://172.19.208.1:8081',
       pathRewrite: {'^/api/': '/'}
     }
   }

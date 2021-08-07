@@ -45,5 +45,26 @@ export default {
       lineupNumber: atBat.lineupNumber,
       topFlg: atBat.topFlg
     })
+  },
+
+  deleteAtBat(beforeAtBat, atBatId) {
+    return axios.$post(`games/at-bats/${atBatId}`, {
+      id: beforeAtBat.id,
+      gameId: beforeAtBat.gameId,
+      batterId: beforeAtBat.batterId,
+      pitcherId: beforeAtBat.pitcherId,
+      inning: beforeAtBat.inning,
+      outCount: beforeAtBat.outCount,
+      firstRunnerId: beforeAtBat.firstRunnerId,
+      secondRunnerId: beforeAtBat.secondRunnerId,
+      thirdRunnerId: beforeAtBat.thirdRunnerId,
+      playerChangeFlg: beforeAtBat.playerChangeFlg,
+      direction: null,
+      completeFlg: null,
+      comment: null,
+      result: null,
+      lineupNumber: beforeAtBat.lineupNumber,
+      topFlg: beforeAtBat.topFlg
+    })
   }
 }

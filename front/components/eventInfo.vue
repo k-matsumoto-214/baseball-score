@@ -67,6 +67,47 @@
               </div>
             </div>
           </div>
+          <div v-if="eventDetail.event.eventType === 4">
+            <div v-for="playerChange in eventDetail.playerChanges" :key="playerChange.id">
+              <div class="d-flex px-5">
+                <v-list-item-content>
+                  <div v-if="playerChange.changeStatus === 0">
+                    <v-list-item-title class="text-caption">投手交代</v-list-item-title>
+                  </div>
+                  <div v-if="playerChange.changeStatus === 1">
+                    <v-list-item-title class="text-caption">守備交代</v-list-item-title>
+                  </div>
+                  <div v-if="playerChange.changeStatus === 2">
+                    <v-list-item-title class="text-caption">代打</v-list-item-title>
+                  </div>
+                  <div v-if="playerChange.changeStatus === 3">
+                    <v-list-item-title class="text-caption">代走</v-list-item-title>
+                  </div>
+                </v-list-item-content>
+                <div class="d-flex">            
+                  <div v-if="playerChange.outPlayerId !== playerChange.inPlayerId" style="margin: auto 0;" class="text-caption">
+                    <p v-if="playerChange.changeStatus === 0" style="margin: auto 0;" class="text-caption">
+                      {{ formatPlayerName(playerChange.outPlayerId) }} ⇒ {{ formatPlayerName(playerChange.inPlayerId) }}
+                    </p>
+                    <p v-else-if="playerChange.changeStatus === 2" style="margin: auto 0;" class="text-caption">
+                     {{ formatPlayerName(playerChange.outPlayerId) }} 
+                        ⇒ {{ formatPlayerName(playerChange.inPlayerId) }}
+                    </p>
+                    <p v-else-if="playerChange.changeStatus === 3" style="margin: auto 0;" class="text-caption">
+                      {{ formatPlayerName(playerChange.outPlayerId) }} 
+                        ⇒ {{formatPlayerName(playerChange.inPlayerId)}}
+                    </p>
+                  </div>
+                  <div v-else-if="playerChange.outPlayerId === playerChange.inPlayerId" style="margin: auto 0;" class="text-caption">
+                    <p style="margin: auto 0;" class="text-caption"> 
+                      {{ formatPlayerName(playerChange.outPlayerId) + ' ' + formatField(playerChange.beforeField) }} 
+                        ⇒ {{ formatField(playerChange.afterField) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div v-if="eventDetail.event.resultFirstRunnerId !== null" class="d-flex px-3">
           <v-list-item-avatar>
@@ -119,8 +160,8 @@
         </div>
       </v-expansion-panel-header>
       <v-expansion-panel-content>
-        <div v-if="startRunners.length === 0">
-          <v-list-item-subtitle class="text-body text-center">先頭打者</v-list-item-subtitle>
+        <div v-if="startRunners[0] === null && startRunners[1] === null && startRunners[2] === null">
+          <v-list-item-subtitle class="text-body text-center">走者なし</v-list-item-subtitle>
         </div>
         <div v-if="startRunners.length !== 0">
           <div v-if="startRunners[0] !== null" class="d-flex px-3">
@@ -199,6 +240,10 @@ export default {
           eventName = '特殊'
           break
         }
+        case 4: {
+          eventName = '選手交代'
+          break
+        }
       }
       return eventName
     },
@@ -212,6 +257,11 @@ export default {
       }
       if (eventDetail.event.resultThirdRunnerId !== null) {
         runner = runner === '' ? '3' : runner + ', 3'
+      }
+      if (eventDetail.event.resultFirstRunnerId !== null &&
+          eventDetail.event.resultSecondRunnerId !== null &&
+          eventDetail.event.resultThirdRunnerId !== null) {
+            runner = '満'
       }
       if (runner !== '') {
         runner += ' 塁'
@@ -237,6 +287,9 @@ export default {
       if (startRunners[2] !== null) {
         runner = runner === '' ? '3' : runner + ', 3'
       }
+      if (startRunners[0] !== null && startRunners[1] !== null && startRunners[2] !== null) {
+        runner = '満'
+      }
       if (runner !== '') {
         runner += ' 塁'
       } else {
@@ -260,6 +313,25 @@ export default {
       return this.players.filter((player) => {
         return player.id === runnerId
       })[0].name
+    },
+    formatPlayerName(playerId) {
+      return this.players.filter((player) => {
+        return player.id === playerId
+      })[0].name
+    },
+    formatField(number) {
+      switch (number) {
+        case 1: return '投'
+        case 2: return '捕'
+        case 3: return '一'
+        case 4: return '二'
+        case 5: return '三'
+        case 6: return '遊'
+        case 7: return '左'
+        case 8: return '中'
+        case 9: return '右'
+        default: return '指'
+      }
     }
   }
 }

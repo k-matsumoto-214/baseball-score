@@ -28,7 +28,12 @@ export default {
       resultFlg: game.resultFlg,
       lineupingStatus: game.lineupingStatus,
       topLineup: game.topLineup,
-      bottomLineup: game.bottomLineup
+      bottomLineup: game.bottomLineup,
+      inning: game.inning,
+      winningPitcher: game.winningPitcher !== null ? game.winningPitcher.id : null,
+      losingPitcher: game.losingPitcher !== null ? game.losingPitcher.id : null,
+      savePitcher: game.savePitcher !== null ? game.savePitcher.id : null,
+      comment: game.comment
     })
   },
 
@@ -38,5 +43,17 @@ export default {
 
   deleteGame(id) {
     return axios.$delte(`games/${id}`)
+  },
+
+  getScore(id) {
+    return axios.$get(`games/scores/${id}`)
+  },
+
+  getProcess(id) {
+    return axios.$get(`games/process/${id}`)
+  },
+
+  getStats(id) {
+    return axios.$get(`games/stats/${id}`)
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <v-row class="mt-5 black white--text" justify="space-between">
+  <v-row class="black white--text" justify="space-between">
     <v-col cols="9" style="height: 64px;">
       <p class="mb-0">{{ atBat.inning }}回{{ atBat.topFlg ? '表' : '裏' }}</p>
       <div class="d-flex">
