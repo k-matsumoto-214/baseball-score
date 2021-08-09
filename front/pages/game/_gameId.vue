@@ -1887,7 +1887,7 @@ export default {
     }
   },
   methods: {
-    saveStarters() {
+    async saveStarters() {
       this.errorMessage = ''
       if (this.starters.length < 9) {
         this.errorMessage = 'スタメンが9人未満です。'
@@ -1899,7 +1899,7 @@ export default {
         this.game.bottomLineup = this.createOrders()
       }
       this.game.lineupingStatus = 2
-      this.updateGame()
+      await this.updateGame()
       location.reload();
     },
     createOrders() {
@@ -1946,8 +1946,8 @@ export default {
         console.log(error)
       })
     },
-    updateGame() {
-      GameApi.updateGame(this.game)
+    async updateGame() {
+      await GameApi.updateGame(this.game)
       .then(() => {
       })
       .catch((error) => {
@@ -3773,7 +3773,7 @@ export default {
             } else if (this.atBat.secondRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId) { // 二塁の代走
               newEvent.resultSecondRunnerId = lineup.orderDetails.slice(-1)[0].playerId
             } else if (this.atBat.thirdRunnerId === lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId) { // 三塁の代走
-              newEvent.resulThirdRunnerId = lineup.orderDetails.slice(-1)[0].playerId
+              newEvent.resultThirdRunnerId = lineup.orderDetails.slice(-1)[0].playerId
             }
           }
         })

@@ -74,7 +74,7 @@ export default {
   proxy: {
     '/api/': {
       // ターゲット先のURLを指定
-      target: 'http://172.19.208.1:8081',
+      target: 'http://',
       pathRewrite: {'^/api/': '/'}
     }
   }
