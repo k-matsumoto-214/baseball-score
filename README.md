@@ -6,6 +6,8 @@
 <h3>password: password</h3>
 ==================================
 <br>
+API　⇒　https://github.com/keisuke-nao-baseball/baseball-score-api
+<br>
 <br>
 <p>野球のスコアを速報形式で記録します。(スマホ向け）</p>
 <p>打席の結果を詳細に記録するのでランナー別の打率、打球方向の割合等も算出可能！！（通算成績算出は開発中）<p>
