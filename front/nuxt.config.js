@@ -14,7 +14,7 @@ export default {
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
       { rel: 'apple-touch-icon', href: '/apple-touch-icon.png', sizes: '180x180' },
-      { rel: 'icon', type='image/png', href: '/android-touch-icon.png', sizes: '192x192' }
+      { rel: 'icon', type: 'image/png', href: '/android-touch-icon.png', sizes: '192x192' }
     ],
     script: [
     ]
