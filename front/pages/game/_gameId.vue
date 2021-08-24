@@ -1879,6 +1879,7 @@ export default {
       return errors
     },
     validateFieldPlayerChanges () {
+      this.playerChangeErrorMessage = ''
       if (this.nowPlayers.length === this.beforeChangePlayersNumber) {
         return true
       } else {
@@ -3730,6 +3731,18 @@ export default {
           this.game.topLineup = newLineup
         } else {
           this.game.bottomLineup = newLineup
+        }
+
+        // 選手交代がない場合はエラー
+        let isChanged = false;
+        newLineup.filter((lineup) => {
+          if (lineup.orderDetails.slice(-1)[0].playerId !== lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId) {
+            isChanged = true
+          }
+        })
+        if (!isChanged) {
+          this.playerChangeErrorMessage='選手交代がありません。'
+          return
         }
 
         if (this.game.topFlg === this.atBat.topFlg) { // 攻撃中   
