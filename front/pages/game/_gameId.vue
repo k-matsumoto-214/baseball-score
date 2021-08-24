@@ -1715,6 +1715,11 @@ export default {
       this.addMobPlayers()
       await this.fetchAtBats()
     })
+    .catch(async () => {
+      this.players = []
+      this.addMobPlayers()
+      await this.fetchAtBats()
+    })
     await this.fetchTeam()
 
     if (this.game.resultFlg) {
