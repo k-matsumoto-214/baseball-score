@@ -544,6 +544,14 @@
               {{ formatResult(game.result) }}
             </p>
           </div>
+          <div class="px-5">
+            <p
+              class="text-body-2 grey lighten-2 rounded-lg px-5 pb-5"
+              style="white-space: pre-line;"
+            >
+              {{ game.comment }}
+            </p>
+           </div>
           <v-simple-table style="padding: 0 0px; border-radius: 0px;" class="mt-5 mx-5">
             <tbody>
               <tr class="text-center">
@@ -1413,7 +1421,7 @@
       >
         <v-card>
           <v-container>
-            <p class="mt-2">責任投手を設定してください</p>
+            <p v-if="game.result !== 2" class="mt-2">責任投手を設定してください</p>
             <v-select
               v-if="game.result === 0"
               :items="pitchers"
@@ -3571,12 +3579,6 @@ export default {
         }
         this.game.resultFlg = true
         this.game.inning = this.atBat.inning
-
-        // 引き分けの場合は責任投手選択をスキップして終了
-        if (this.game.result === 2) {
-          this.endGame()
-          this.isOpenResponsiblePitcherModal = false
-        }
 
         // 登板投手の取得　勝ち用と負け用
         let pitchers = []
