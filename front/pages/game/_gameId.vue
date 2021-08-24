@@ -1715,10 +1715,10 @@ export default {
       this.addMobPlayers()
       await this.fetchAtBats()
     })
-    this.fetchTeam()
+    await this.fetchTeam()
 
     if (this.game.resultFlg) {
-      this.getResult()
+      await this.getResult()
     }
   },
  watch: {
@@ -1964,11 +1964,12 @@ export default {
       })
     },
     addMobPlayers() {
-      if (this.players.some(player => player.id === 1000) ) return
+      if (this.players.some(player => player.id === 1000)) return
       this.players.push(
-        { 'id': 1000, 'name': 'mob1', 'image': null },  { 'id': 1001, 'name': 'mob2', 'image': null},  { 'id': 1002, 'name': 'mob3', 'image': null},  
-        { 'id': 1003, 'name': 'mob4', 'image': null },  { 'id': 1004, 'name': 'mob5', 'image': null }, { 'id': 1005, 'name': 'mob6', 'image': null }, 
-        { 'id': 1006, 'name': 'mob7', 'image': null },  { 'id': 1007, 'name': 'mob8', 'image': null }, { 'id': 1008, 'name': 'mob9', 'image': null },
+        { 'id': 1000, 'name': '相手1', 'image': null },
+        { 'id': 1009, 'name': '助っ人1', 'image': null },  { 'id': 1010, 'name': '助っ人2', 'image': null }, { 'id': 1011, 'name': '助っ人3', 'image': null },  
+        { 'id': 1012, 'name': '助っ人4', 'image': null },  { 'id': 1013, 'name': '助っ人5', 'image': null }, { 'id': 1014, 'name': '助っ人6', 'image': null }, 
+        { 'id': 1015, 'name': '助っ人7', 'image': null },  { 'id': 1016, 'name': '助っ人8', 'image': null }, { 'id': 1017, 'name': '助っ人9', 'image': null },
       )
     },
     async fetchAtBats() {

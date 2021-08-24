@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex">
+  <div v-if="player.id !== 1000" class="d-flex">
     <div style="min-width: 18px">{{ number }}</div>
     <v-list-item-avatar>
       <v-img :src="player.image ? player.image : '../noimage.png'"></v-img>
