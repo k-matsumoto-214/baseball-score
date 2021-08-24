@@ -9,7 +9,8 @@
       player.id !== 1005 &&
       player.id !== 1006 &&
       player.id !== 1007 &&
-      player.id !== 1008
+      player.id !== 1008 &&
+      !(isReserve && player.deleteFlg)
     "
     class="d-flex"
   >
@@ -27,7 +28,8 @@
 export default {
   props: {
     player: Object,
-    number: Number
+    number: Number,
+    isReserve: Boolean
   }
 }
 </script>

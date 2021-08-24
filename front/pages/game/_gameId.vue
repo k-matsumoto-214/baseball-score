@@ -19,6 +19,7 @@
                   v-for="player in players"
                   :key="player.id"
                   :player="player"
+                  :isReserve="true"
                 />
               </draggable>
             </v-col>
@@ -32,6 +33,7 @@
                       :key="starter.id"
                       :player="starter"
                       :number="idx + 1"
+                      :isReserve="false"
                     />
                     <p v-if="starters.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
                   </draggable>
@@ -619,7 +621,7 @@
         <div v-else-if="isGameStats">
           <v-list-item-subtitle class="px-2 pt-2">打者</v-list-item-subtitle>
           <v-col style="padding: 0 0px; width: 100%;" class="pb-5">
-            <v-simple-table dense fixed-header style="padding: 0 0px; border-radius: 0px;">
+            <v-simple-table dense style="padding: 0 0px; border-radius: 0px;">
               <thead>
                 <tr class="text-center">
                   <th class="text-center">選手</th>
@@ -1497,6 +1499,7 @@
                     v-for="nowReserve in nowReserves"
                     :key="nowReserve.id"
                     :player="nowReserve"
+                    :isReserve="true"
                   />
                 </draggable>
               </v-col>
@@ -1510,6 +1513,7 @@
                         :key="player.id"
                         :player="player"
                         :number="idx + 1"
+                        :isReserve="false"
                       />
                     </draggable>
                   </v-col>
@@ -3705,6 +3709,8 @@ export default {
           this.nowReserves.push(player)
         }
       })
+
+      console.log(this.nowReserves)
 
       this.beforeChangePlayersNumber = this.nowPlayers.length //　出場選手数の把握
       this.isOpenFieldPlayerChangeModal = true
