@@ -1967,7 +1967,9 @@ export default {
     addMobPlayers() {
       if (this.players.some(player => player.id === 1000)) return
       this.players.push(
-        { 'id': 1000, 'name': '相手1', 'image': null },
+        { 'id': 1000, 'name': '相手1', 'image': null }, { 'id': 1001, 'name': '相手2', 'image': null }, { 'id': 1002, 'name': '相手3', 'image': null },
+        { 'id': 1003, 'name': '相手4', 'image': null }, { 'id': 1004, 'name': '相手5', 'image': null }, { 'id': 1005, 'name': '相手6', 'image': null },
+        { 'id': 1006, 'name': '相手7', 'image': null }, { 'id': 1007, 'name': '相手8', 'image': null }, { 'id': 1008, 'name': '相手9', 'image': null },
         { 'id': 1009, 'name': '助っ人1', 'image': null },  { 'id': 1010, 'name': '助っ人2', 'image': null }, { 'id': 1011, 'name': '助っ人3', 'image': null },  
         { 'id': 1012, 'name': '助っ人4', 'image': null },  { 'id': 1013, 'name': '助っ人5', 'image': null }, { 'id': 1014, 'name': '助っ人6', 'image': null }, 
         { 'id': 1015, 'name': '助っ人7', 'image': null },  { 'id': 1016, 'name': '助っ人8', 'image': null }, { 'id': 1017, 'name': '助っ人9', 'image': null },
@@ -3733,10 +3735,11 @@ export default {
           this.game.bottomLineup = newLineup
         }
 
-        // 選手交代がない場合はエラー
+        // 選手交代・守備交代がない場合はエラー
         let isChanged = false;
         newLineup.filter((lineup) => {
-          if (lineup.orderDetails.slice(-1)[0].playerId !== lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId) {
+          if (lineup.orderDetails.slice(-1)[0].playerId !== lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+            || lineup.orderDetails.slice(-1)[0].fieldNumber !== lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber) {
             isChanged = true
           }
         })

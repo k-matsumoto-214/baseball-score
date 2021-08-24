@@ -1,5 +1,18 @@
 <template>
-  <div v-if="player.id !== 1000" class="d-flex">
+  <div
+    v-if="
+      player.id !== 1000 &&
+      player.id !== 1001 &&
+      player.id !== 1002 &&
+      player.id !== 1003 &&
+      player.id !== 1004 &&
+      player.id !== 1005 &&
+      player.id !== 1006 &&
+      player.id !== 1007 &&
+      player.id !== 1008
+    "
+    class="d-flex"
+  >
     <div style="min-width: 18px">{{ number }}</div>
     <v-list-item-avatar>
       <v-img :src="player.image ? player.image : '../noimage.png'"></v-img>
