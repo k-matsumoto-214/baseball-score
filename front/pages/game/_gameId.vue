@@ -375,6 +375,7 @@
                   </div>
                   <div class="px-2 py-2">
                     <v-list-item-subtitle style="font-weight: 600;">{{ batterProcess.battingResult }}</v-list-item-subtitle>
+                    <v-list-item-subtitle class="text-caption">{{ batterProcess.battingResultComment }}</v-list-item-subtitle>
                   </div>
                   <div v-if="batterProcess.afterBattingEvents.length !== 0" class="px-2 pb-2">
                     <div class="grey lighten-2 rounded-lg px-5 py-2">
@@ -632,6 +633,7 @@
                 </div>
                 <div class="px-2 py-2">
                   <v-list-item-subtitle style="font-weight: 600;">{{ batterProcess.battingResult }}</v-list-item-subtitle>
+                  <v-list-item-subtitle class="text-caption">{{ batterProcess.battingResultComment }}</v-list-item-subtitle>
                 </div>
                 <div v-if="batterProcess.afterBattingEvents.length !== 0" class="px-2 pb-2">
                   <div class="grey lighten-2 rounded-lg px-5 py-2">
