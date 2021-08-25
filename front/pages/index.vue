@@ -14,9 +14,6 @@
       <v-card-actions>
         <v-btn color="primary" block @click="$router.push('/player')">Player</v-btn>
       </v-card-actions>
-      <v-card-actions>
-        <v-btn color="primary" block @click="$router.push('/stat')">Stat</v-btn>
-      </v-card-actions>
     </v-card>
   </v-container>
 </template>

@@ -89,6 +89,10 @@
                     <p v-if="playerChange.changeStatus === 0" style="margin: auto 0;" class="text-caption">
                       {{ formatPlayerName(playerChange.outPlayerId) }} ⇒ {{ formatPlayerName(playerChange.inPlayerId) }}
                     </p>
+                    <p v-else-if="playerChange.changeStatus === 1" style="margin: auto 0;" class="text-caption">
+                     {{ formatPlayerName(playerChange.outPlayerId) + ' ' + formatField(playerChange.beforeField) }}
+                        ⇒ {{ formatPlayerName(playerChange.inPlayerId) + ' ' + formatField(playerChange.afterField) }}
+                    </p>
                     <p v-else-if="playerChange.changeStatus === 2" style="margin: auto 0;" class="text-caption">
                      {{ formatPlayerName(playerChange.outPlayerId) }} 
                         ⇒ {{ formatPlayerName(playerChange.inPlayerId) }}
