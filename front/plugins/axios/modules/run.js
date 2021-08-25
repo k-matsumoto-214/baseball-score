@@ -12,7 +12,7 @@ export default {
       pitcherId: run.pitcherId,
       runnerId: run.runnerId,
       inning: run.inning,
-      earndFlg: run.earnedFlg,
+      earnedFlg: run.earnedFlg,
       rbiFlg: run.rbiFlg,
       topFlg: run.topFlg
     })
