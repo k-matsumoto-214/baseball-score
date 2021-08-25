@@ -11,6 +11,7 @@
       <v-list three-line>
         <template v-for="(player, idx) in players">
           <v-list-item
+            v-if="!player.deleteFlg"
             :key="player.id"
             :to="`/player/${player.id}`"
           >

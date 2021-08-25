@@ -19,6 +19,7 @@
                   v-for="player in players"
                   :key="player.id"
                   :player="player"
+                  :isReserve="true"
                 />
               </draggable>
             </v-col>
@@ -32,6 +33,7 @@
                       :key="starter.id"
                       :player="starter"
                       :number="idx + 1"
+                      :isReserve="false"
                     />
                     <p v-if="starters.length === 0" class="grey lighten-2 py-1 px-2 rounded-pill text-center">ここにドラッグ</p>
                   </draggable>
@@ -415,7 +417,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="stat, idx in stats" :key="idx" class="text-center">
+                    <tr v-for="stat, idx in statsForBatter" :key="idx" class="text-center">
                       <td>{{ stat.name }}</td>
                       <td>{{ stat.appear }}</td>
                       <td>{{ stat.batting }}</td>
@@ -429,6 +431,35 @@
                       <td>{{ stat.rbi }}</td>
                       <td>{{ stat.score }}</td>
                       <td>{{ stat.steal }}</td>
+                    </tr>
+                </tbody>
+              </v-simple-table>
+            </v-col>
+            <v-list-item-subtitle class="px-2 pt-2">投手</v-list-item-subtitle>
+            <v-col style="padding: 0 0px; width: 100%;" class="pb-5">
+              <v-simple-table dense fixed-header style="padding: 0 0px; border-radius: 0px;">
+                <thead>
+                  <tr class="text-center">
+                    <th class="text-center">選手</th>
+                    <th class="text-center">回</th>
+                    <th class="text-center">失</th>
+                    <th class="text-center">責</th>
+                    <th class="text-center">安</th>
+                    <th class="text-center">本</th>
+                    <th class="text-center">四死</th>
+                    <th class="text-center">振</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="stat, idx in statsForPitcher" :key="idx" class="text-center">
+                      <td>{{ stat.name }}</td>
+                      <td>{{ stat.inning }}</td>
+                      <td>{{ stat.r }}</td>
+                      <td>{{ stat.er }}</td>
+                      <td>{{ stat.hit }}</td>
+                      <td>{{ stat.hr }}</td>
+                      <td>{{ stat.bb }}</td>
+                      <td>{{ stat.k }}</td>
                     </tr>
                 </tbody>
               </v-simple-table>
@@ -544,6 +575,14 @@
               {{ formatResult(game.result) }}
             </p>
           </div>
+          <div class="px-5">
+            <p
+              class="text-body-2 grey lighten-2 rounded-lg px-5 pb-5"
+              style="white-space: pre-line;"
+            >
+              {{ game.comment }}
+            </p>
+           </div>
           <v-simple-table style="padding: 0 0px; border-radius: 0px;" class="mt-5 mx-5">
             <tbody>
               <tr class="text-center">
@@ -611,7 +650,7 @@
         <div v-else-if="isGameStats">
           <v-list-item-subtitle class="px-2 pt-2">打者</v-list-item-subtitle>
           <v-col style="padding: 0 0px; width: 100%;" class="pb-5">
-            <v-simple-table dense fixed-header style="padding: 0 0px; border-radius: 0px;">
+            <v-simple-table dense style="padding: 0 0px; border-radius: 0px;">
               <thead>
                 <tr class="text-center">
                   <th class="text-center">選手</th>
@@ -630,7 +669,7 @@
                 </tr>
               </thead>
               <tbody>
-                  <tr v-for="stat, idx in stats" :key="idx" class="text-center">
+                  <tr v-for="stat, idx in statsForBatter" :key="idx" class="text-center">
                     <td>{{ stat.name }}</td>
                     <td>{{ stat.appear }}</td>
                     <td>{{ stat.batting }}</td>
@@ -644,6 +683,35 @@
                     <td>{{ stat.rbi }}</td>
                     <td>{{ stat.score }}</td>
                     <td>{{ stat.steal }}</td>
+                  </tr>
+              </tbody>
+            </v-simple-table>
+          </v-col>
+          <v-list-item-subtitle class="px-2 pt-2">投手</v-list-item-subtitle>
+          <v-col style="padding: 0 0px; width: 100%;" class="pb-5">
+            <v-simple-table dense fixed-header style="padding: 0 0px; border-radius: 0px;">
+              <thead>
+                <tr class="text-center">
+                  <th class="text-center">選手</th>
+                  <th class="text-center">回</th>
+                  <th class="text-center">失</th>
+                  <th class="text-center">責</th>
+                  <th class="text-center">安</th>
+                  <th class="text-center">本</th>
+                  <th class="text-center">四死</th>
+                  <th class="text-center">振</th>
+                </tr>
+              </thead>
+              <tbody>
+                  <tr v-for="stat, idx in statsForPitcher" :key="idx" class="text-center">
+                    <td>{{ stat.name }}</td>
+                    <td>{{ stat.inning }}</td>
+                    <td>{{ stat.r }}</td>
+                    <td>{{ stat.er }}</td>
+                    <td>{{ stat.hit }}</td>
+                    <td>{{ stat.hr }}</td>
+                    <td>{{ stat.bb }}</td>
+                    <td>{{ stat.k }}</td>
                   </tr>
               </tbody>
             </v-simple-table>
@@ -1413,7 +1481,7 @@
       >
         <v-card>
           <v-container>
-            <p class="mt-2">責任投手を設定してください</p>
+            <p v-if="game.result !== 2" class="mt-2">責任投手を設定してください</p>
             <v-select
               v-if="game.result === 0"
               :items="pitchers"
@@ -1489,6 +1557,7 @@
                     v-for="nowReserve in nowReserves"
                     :key="nowReserve.id"
                     :player="nowReserve"
+                    :isReserve="true"
                   />
                 </draggable>
               </v-col>
@@ -1502,6 +1571,7 @@
                         :key="player.id"
                         :player="player"
                         :number="idx + 1"
+                        :isReserve="false"
                       />
                     </draggable>
                   </v-col>
@@ -1695,7 +1765,8 @@ export default {
       isOpenBattingPlayerChangeModal: false,
       score: null,
       processes: [],
-      stats: [],
+      statsForBatter: [],
+      statsForPitcher: [],
       nowPlayers: [],
       nowFields: [],
       nowReserves: [],
@@ -1715,10 +1786,15 @@ export default {
       this.addMobPlayers()
       await this.fetchAtBats()
     })
-    this.fetchTeam()
+    .catch(async () => {
+      this.players = []
+      this.addMobPlayers()
+      await this.fetchAtBats()
+    })
+    await this.fetchTeam()
 
     if (this.game.resultFlg) {
-      this.getResult()
+      await this.getResult()
     }
   },
  watch: {
@@ -1879,6 +1955,7 @@ export default {
       return errors
     },
     validateFieldPlayerChanges () {
+      this.playerChangeErrorMessage = ''
       if (this.nowPlayers.length === this.beforeChangePlayersNumber) {
         return true
       } else {
@@ -1964,11 +2041,14 @@ export default {
       })
     },
     addMobPlayers() {
-      if (this.players.some(player => player.id === 1000) ) return
+      if (this.players.some(player => player.id === 1000)) return
       this.players.push(
-        { 'id': 1000, 'name': 'mob1', 'image': null },  { 'id': 1001, 'name': 'mob2', 'image': null},  { 'id': 1002, 'name': 'mob3', 'image': null},  
-        { 'id': 1003, 'name': 'mob4', 'image': null },  { 'id': 1004, 'name': 'mob5', 'image': null }, { 'id': 1005, 'name': 'mob6', 'image': null }, 
-        { 'id': 1006, 'name': 'mob7', 'image': null },  { 'id': 1007, 'name': 'mob8', 'image': null }, { 'id': 1008, 'name': 'mob9', 'image': null },
+        { 'id': 1000, 'name': '相手1', 'image': null }, { 'id': 1001, 'name': '相手2', 'image': null }, { 'id': 1002, 'name': '相手3', 'image': null },
+        { 'id': 1003, 'name': '相手4', 'image': null }, { 'id': 1004, 'name': '相手5', 'image': null }, { 'id': 1005, 'name': '相手6', 'image': null },
+        { 'id': 1006, 'name': '相手7', 'image': null }, { 'id': 1007, 'name': '相手8', 'image': null }, { 'id': 1008, 'name': '相手9', 'image': null },
+        { 'id': 1009, 'name': '助っ人1', 'image': null },  { 'id': 1010, 'name': '助っ人2', 'image': null }, { 'id': 1011, 'name': '助っ人3', 'image': null },  
+        { 'id': 1012, 'name': '助っ人4', 'image': null },  { 'id': 1013, 'name': '助っ人5', 'image': null }, { 'id': 1014, 'name': '助っ人6', 'image': null }, 
+        { 'id': 1015, 'name': '助っ人7', 'image': null },  { 'id': 1016, 'name': '助っ人8', 'image': null }, { 'id': 1017, 'name': '助っ人9', 'image': null },
       )
     },
     async fetchAtBats() {
@@ -3563,12 +3643,6 @@ export default {
         this.game.resultFlg = true
         this.game.inning = this.atBat.inning
 
-        // 引き分けの場合は責任投手選択をスキップして終了
-        if (this.game.result === 2) {
-          this.endGame()
-          this.isOpenResponsiblePitcherModal = false
-        }
-
         // 登板投手の取得　勝ち用と負け用
         let pitchers = []
         const lineups = this.game.topFlg ? this.game.topLineup : this.game.bottomLineup
@@ -3664,7 +3738,8 @@ export default {
     },
     async fetchStats() {
       try {
-        this.stats = await GameApi.getStats(this.game.id)
+        this.statsForBatter = await GameApi.getStatsForBatter(this.game.id)
+        this.statsForPitcher = await GameApi.getStatsForPitcher(this.game.id)
       } catch(error) {
         console.log(error)
       }
@@ -3694,6 +3769,8 @@ export default {
           this.nowReserves.push(player)
         }
       })
+
+      console.log(this.nowReserves)
 
       this.beforeChangePlayersNumber = this.nowPlayers.length //　出場選手数の把握
       this.isOpenFieldPlayerChangeModal = true
@@ -3729,6 +3806,19 @@ export default {
           this.game.topLineup = newLineup
         } else {
           this.game.bottomLineup = newLineup
+        }
+
+        // 選手交代・守備交代がない場合はエラー
+        let isChanged = false;
+        newLineup.filter((lineup) => {
+          if (lineup.orderDetails.slice(-1)[0].playerId !== lineup.orderDetails[(lineup.orderDetails.length - 2)].playerId
+            || lineup.orderDetails.slice(-1)[0].fieldNumber !== lineup.orderDetails[(lineup.orderDetails.length - 2)].fieldNumber) {
+            isChanged = true
+          }
+        })
+        if (!isChanged) {
+          this.playerChangeErrorMessage='選手交代がありません。'
+          return
         }
 
         if (this.game.topFlg === this.atBat.topFlg) { // 攻撃中   

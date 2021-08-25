@@ -1,135 +1,151 @@
 <template>
   <v-container>
-    <v-card
-      class="mx-auto fill-width pt-7"
-      max-width="640"
-      flat
-    >
-      <v-card-text>
-        Player
-      </v-card-text>
-      <div v-if="!isEdit">
-        <v-img
-          :src="player.image !== null ? player.image : '../noimage.png'"
-        ></v-img>
-        <v-card-title>
-          {{ player.name }}
-        </v-card-title>
-        <v-card-subtitle>
-          ポジション:　{{ player.position }} <br>
-          背番号:　{{ player.number }} <br>
-          コメント:　{{ player.comment }}
-        </v-card-subtitle>
-      </div>
-      <div v-else>
-        <v-img v-if="player.image" :src="player.image"></v-img>
-        <v-file-input
-          label="クリックして画像を変更"
-          accept="image/*"
-          prepend-icon="mdi-image"
-          v-model="inputImage"
-          @change="pushImage"
-        ></v-file-input>
-        <v-text-field
-          v-model="player.name"
-          :error-messages="nameErrors"
-          :counter="100"
-          outlined
-          label="選手名"
-          required
-          @input="$v.player.name.$touch()"
-          @blur="$v.player.name.$touch()"
-        ></v-text-field>
-        <v-text-field
-          v-model="player.position"
-          :error-messages="positionErrors"
-          :counter="100"
-          outlined
-          label="ポジション"
-          required
-          @input="$v.player.position.$touch()"
-          @blur="$v.player.position.$touch()"
-        ></v-text-field>
-        <v-text-field
-          v-model="player.number"
-          :error-messages="numberErrors"
-          outlined
-          label="背番号"
-          required
-          @input="$v.player.number.$touch()"
-          @blur="$v.player.number.$touch()"
-        ></v-text-field>
-        <v-text-field
-          v-model="player.comment"
-          :error-messages="commentErrors"
-          :counter="200"
-          outlined
-          label="コメント"
-          required
-          @input="$v.player.comment.$touch()"
-          @blur="$v.player.comment.$touch()"
-        ></v-text-field>
-      </div>
-      <v-row v-if="!isEdit" justify="center">
-        <v-btn
-          class="mr-4 mt-4 mb-2"
-          color="primary"
-          @click="isEdit = true"
-        >
-          編集
-        </v-btn>
-        <v-btn
-          class="mt-4 mb-2"
-          @click="$router.push('/player')"
-        >
-          一覧へ
-        </v-btn>
-      </v-row>
-      <v-row v-else justify="center">
-        <v-btn
-          class="mr-4 mt-4 mb-2"
-          color="primary"
-          @click="save()"
-        >
-          更新
-        </v-btn>
-        <v-btn
-          class="mt-4 mb-2"
-          @click="cancel()"
-        >
-          戻る
-        </v-btn>
-      </v-row>
-      <v-dialog v-if="isEdit" v-model="isOpenDeleteModal" max-width="640">
-        <template v-slot:activator="{ on, attrs }">
-          <p 
-            class="text-caption text-right"
-            style="margin-top: -30px; color: #F06292;"
-            @click="isOpenDeleteModal = true"
-            v-bind="attrs"
-            v-on="on"
+    <div v-if="!player.deleteFlg">
+      <v-card
+        class="mx-auto fill-width pt-7"
+        max-width="640"
+        flat
+      >
+        <v-card-text>
+          Player
+        </v-card-text>
+        <div v-if="!isEdit">
+          <v-img
+            :src="player.image !== null ? player.image : '../noimage.png'"
+          ></v-img>
+          <v-card-title>
+            {{ player.name }}
+          </v-card-title>
+          <v-card-subtitle>
+            ポジション:　{{ player.position }} <br>
+            背番号:　{{ player.number }} <br>
+            コメント:　{{ player.comment }}
+          </v-card-subtitle>
+        </div>
+        <div v-else>
+          <v-img v-if="player.image" :src="player.image"></v-img>
+          <v-file-input
+            label="クリックして画像を変更"
+            accept="image/*"
+            prepend-icon="mdi-image"
+            v-model="inputImage"
+            @change="pushImage"
+          ></v-file-input>
+          <v-text-field
+            v-model="player.name"
+            :error-messages="nameErrors"
+            :counter="100"
+            outlined
+            label="選手名"
+            required
+            @input="$v.player.name.$touch()"
+            @blur="$v.player.name.$touch()"
+          ></v-text-field>
+          <v-text-field
+            v-model="player.position"
+            :error-messages="positionErrors"
+            :counter="100"
+            outlined
+            label="ポジション"
+            required
+            @input="$v.player.position.$touch()"
+            @blur="$v.player.position.$touch()"
+          ></v-text-field>
+          <v-text-field
+            v-model="player.number"
+            :error-messages="numberErrors"
+            outlined
+            label="背番号"
+            required
+            @input="$v.player.number.$touch()"
+            @blur="$v.player.number.$touch()"
+          ></v-text-field>
+          <v-text-field
+            v-model="player.comment"
+            :error-messages="commentErrors"
+            :counter="200"
+            outlined
+            label="コメント"
+            required
+            @input="$v.player.comment.$touch()"
+            @blur="$v.player.comment.$touch()"
+          ></v-text-field>
+        </div>
+        <v-row v-if="!isEdit" justify="center">
+          <v-btn
+            class="mr-4 mt-4 mb-2"
+            color="primary"
+            @click="isEdit = true"
           >
-            削除
-          </p>
+            編集
+          </v-btn>
+          <v-btn
+            class="mt-4 mb-2"
+            @click="$router.push('/player')"
+          >
+            一覧へ
+          </v-btn>
+        </v-row>
+        <v-row v-else justify="center">
+          <v-btn
+            class="mr-4 mt-4 mb-2"
+            color="primary"
+            @click="save()"
+          >
+            更新
+          </v-btn>
+          <v-btn
+            class="mt-4 mb-2"
+            @click="cancel()"
+          >
+            戻る
+          </v-btn>
+        </v-row>
+        <v-dialog v-if="isEdit" v-model="isOpenDeleteModal" max-width="640">
+          <template v-slot:activator="{ on, attrs }">
+            <p 
+              class="text-caption text-right"
+              style="margin-top: -30px; color: #F06292;"
+              @click="isOpenDeleteModal = true"
+              v-bind="attrs"
+              v-on="on"
+            >
+              削除
+            </p>
+          </template>
+          <v-card class="px-6 py-8">
+            <v-card-text>「{{ player.name }}」を削除します。一度削除した選手は復元できません。<br>本当に削除しますか？</v-card-text>
+            <v-row justify="center">
+              <v-btn color="pink lighten-2" @click="deletePlayer()" class="mr-4 mt-4 white--text">削除</v-btn>
+              <v-btn @click="isOpenDeleteModal = false" class="mt-4">戻る</v-btn>
+            </v-row>
+          </v-card>
+        </v-dialog>
+      </v-card>
+      <v-snackbar
+        v-model="isSuccess"
+        :timeout=1000
+        color="blue accent-2"
+      >
+        {{ successMessage }}
+        <template>
         </template>
-        <v-card class="px-6 py-8">
-          <v-card-text>「{{ player.name }}」を削除します。一度削除した選手は復元できません。<br>本当に削除しますか？</v-card-text>
-          <v-row justify="center">
-            <v-btn color="pink lighten-2" @click="deletePlayer()" class="mr-4 mt-4 white--text">削除</v-btn>
-            <v-btn @click="isOpenDeleteModal = false" class="mt-4">戻る</v-btn>
-          </v-row>
-        </v-card>
-      </v-dialog>
-    </v-card>
-    <v-snackbar
-      v-model="isSuccess"
-      :timeout=1000
-      color="blue accent-2"
-    >
-      {{ successMessage }}
-      <template>
-      </template>
-    </v-snackbar>
+      </v-snackbar>
+    </div>
+    <div v-else>
+      <v-card
+        class="mx-auto fill-width pt-7"
+        max-width="640"
+        flat
+      >
+        <v-card-text>
+          Player
+        </v-card-text>
+        <div class="text-center mt-5">
+          <p> 削除されている選手です。</p>
+        </div>
+      </v-card>
+    </div>
   </v-container>
 </template>
 
