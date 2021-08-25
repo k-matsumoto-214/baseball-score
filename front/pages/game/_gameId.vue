@@ -417,7 +417,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="stat, idx in stats" :key="idx" class="text-center">
+                    <tr v-for="stat, idx in statsForBatter" :key="idx" class="text-center">
                       <td>{{ stat.name }}</td>
                       <td>{{ stat.appear }}</td>
                       <td>{{ stat.batting }}</td>
@@ -431,6 +431,35 @@
                       <td>{{ stat.rbi }}</td>
                       <td>{{ stat.score }}</td>
                       <td>{{ stat.steal }}</td>
+                    </tr>
+                </tbody>
+              </v-simple-table>
+            </v-col>
+            <v-list-item-subtitle class="px-2 pt-2">投手</v-list-item-subtitle>
+            <v-col style="padding: 0 0px; width: 100%;" class="pb-5">
+              <v-simple-table dense fixed-header style="padding: 0 0px; border-radius: 0px;">
+                <thead>
+                  <tr class="text-center">
+                    <th class="text-center">選手</th>
+                    <th class="text-center">回</th>
+                    <th class="text-center">失</th>
+                    <th class="text-center">責</th>
+                    <th class="text-center">安</th>
+                    <th class="text-center">本</th>
+                    <th class="text-center">四死</th>
+                    <th class="text-center">振</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="stat, idx in statsForPitcher" :key="idx" class="text-center">
+                      <td>{{ stat.name }}</td>
+                      <td>{{ stat.inning }}</td>
+                      <td>{{ stat.r }}</td>
+                      <td>{{ stat.er }}</td>
+                      <td>{{ stat.hit }}</td>
+                      <td>{{ stat.hr }}</td>
+                      <td>{{ stat.bb }}</td>
+                      <td>{{ stat.k }}</td>
                     </tr>
                 </tbody>
               </v-simple-table>
@@ -640,7 +669,7 @@
                 </tr>
               </thead>
               <tbody>
-                  <tr v-for="stat, idx in stats" :key="idx" class="text-center">
+                  <tr v-for="stat, idx in statsForBatter" :key="idx" class="text-center">
                     <td>{{ stat.name }}</td>
                     <td>{{ stat.appear }}</td>
                     <td>{{ stat.batting }}</td>
@@ -654,6 +683,35 @@
                     <td>{{ stat.rbi }}</td>
                     <td>{{ stat.score }}</td>
                     <td>{{ stat.steal }}</td>
+                  </tr>
+              </tbody>
+            </v-simple-table>
+          </v-col>
+          <v-list-item-subtitle class="px-2 pt-2">投手</v-list-item-subtitle>
+          <v-col style="padding: 0 0px; width: 100%;" class="pb-5">
+            <v-simple-table dense fixed-header style="padding: 0 0px; border-radius: 0px;">
+              <thead>
+                <tr class="text-center">
+                  <th class="text-center">選手</th>
+                  <th class="text-center">回</th>
+                  <th class="text-center">失</th>
+                  <th class="text-center">責</th>
+                  <th class="text-center">安</th>
+                  <th class="text-center">本</th>
+                  <th class="text-center">四死</th>
+                  <th class="text-center">振</th>
+                </tr>
+              </thead>
+              <tbody>
+                  <tr v-for="stat, idx in statsForPitcher" :key="idx" class="text-center">
+                    <td>{{ stat.name }}</td>
+                    <td>{{ stat.inning }}</td>
+                    <td>{{ stat.r }}</td>
+                    <td>{{ stat.er }}</td>
+                    <td>{{ stat.hit }}</td>
+                    <td>{{ stat.hr }}</td>
+                    <td>{{ stat.bb }}</td>
+                    <td>{{ stat.k }}</td>
                   </tr>
               </tbody>
             </v-simple-table>
@@ -1707,7 +1765,8 @@ export default {
       isOpenBattingPlayerChangeModal: false,
       score: null,
       processes: [],
-      stats: [],
+      statsForBatter: [],
+      statsForPitcher: [],
       nowPlayers: [],
       nowFields: [],
       nowReserves: [],
@@ -3679,7 +3738,8 @@ export default {
     },
     async fetchStats() {
       try {
-        this.stats = await GameApi.getStats(this.game.id)
+        this.statsForBatter = await GameApi.getStatsForBatter(this.game.id)
+        this.statsForPitcher = await GameApi.getStatsForPitcher(this.game.id)
       } catch(error) {
         console.log(error)
       }

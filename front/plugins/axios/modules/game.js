@@ -53,7 +53,11 @@ export default {
     return axios.$get(`games/process/${id}`)
   },
 
-  getStats(id) {
-    return axios.$get(`games/stats/${id}`)
+  getStatsForBatter(id) {
+    return axios.$get(`games/stats/batters/${id}`)
+  },
+
+  getStatsForPitcher(id) {
+    return axios.$get(`games/stats/pitchers/${id}`)
   }
 }
