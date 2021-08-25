@@ -360,7 +360,12 @@
             <div v-for="process,idx in processes" :key="idx">
                 <v-subheader class="grey darken-4 white--text">{{ process.inningInfo }}</v-subheader>
                 <div v-for="batterProcess, idx in process.batterProcesses" :key="idx">
-                  <v-list-item-content class="grey darken-1 white--text px-2">{{ batterProcess.batter }}</v-list-item-content>
+                  <v-list-item-content class="grey darken-1 white--text px-2">
+                    <div class="d-flex">
+                      <p class="mb-0">{{ batterProcess.batter }}</p>
+                      <p class="mb-0" style="color: whitesmoke;">　{{ batterProcess.situation }}</p>
+                    </div>
+                  </v-list-item-content>
                   <div v-if="batterProcess.beforeBattingEvents.length !== 0" class="px-2 pt-2">
                     <div class="grey lighten-2 rounded-lg px-5 py-2">
                       <div v-for="beforeBattingEvent, idx in batterProcess.beforeBattingEvents" :key="idx">
@@ -612,7 +617,12 @@
           <div v-for="process,idx in processes" :key="idx">
               <v-subheader class="grey darken-4 white--text">{{ process.inningInfo }}</v-subheader>
               <div v-for="batterProcess, idx in process.batterProcesses" :key="idx">
-                <v-list-item-content class="grey darken-1 white--text px-2">{{ batterProcess.batter }}</v-list-item-content>
+                <v-list-item-content class="grey darken-1 white--text px-2">
+                  <div class="d-flex">
+                    <p class="mb-0">{{ batterProcess.batter }}</p>
+                    <p class="mb-0" style="color: whitesmoke;">　{{ batterProcess.situation }}</p>
+                  </div>
+                </v-list-item-content>
                 <div v-if="batterProcess.beforeBattingEvents.length !== 0" class="px-2 pt-2">
                   <div class="grey lighten-2 rounded-lg px-5 py-2">
                     <div v-for="beforeBattingEvent, idx in batterProcess.beforeBattingEvents" :key="idx">
