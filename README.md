@@ -1,4 +1,6 @@
-# 野球スコア記録アプリ(https://score.keisukematsumoto.com)  
+公開停止中
+
+# 野球スコア記録アプリ(初作成)  
   
 ## サンプルアカウント  
 ### accountId: testtest  
